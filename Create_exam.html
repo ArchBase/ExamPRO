@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Exam Creation</title>
+    <style>
+        /* Reset some default styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 70%;
+            margin: 50px auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #1E4E89; /* Blue color */
+            font-size: 36px;
+        }
+
+        /* Form Styles */
+        .exam-creation-form {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #1E4E89;
+            font-size: 24px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 10px;
+            display: block;
+            color: #333;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        button {
+            background-color: #1E4E89; /* Blue color */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #155A8A; /* Darker blue on hover */
+        }
+
+        /* Form layout adjustments for inputs */
+        input[type="date"],
+        input[type="time"],
+        select {
+            padding: 8px;
+        }
+
+        select {
+            background-color: #f8f9fa;
+        }
+
+        /* Icon styling */
+        .icon {
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        /* Styling the input fields and button */
+        .exam-creation-form input,
+        .exam-creation-form textarea,
+        .exam-creation-form select {
+            font-size: 16px;
+            padding: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><img src="https://img.icons8.com/ios-filled/50/ffffff/education.png" alt="Exam Icon" class="icon"> Faculty Exam Creation</h1>
+        </header>
+        
+        <div class="exam-creation-form">
+            <h2><img src="https://img.icons8.com/ios-filled/50/ffffff/document.png" alt="Document Icon" class="icon"> Create Exam</h2>
+            <form action="/create-exam" method="POST">
+                <label for="exam-name">Exam Name:</label>
+                <input type="text" id="exam-name" name="exam-name" required placeholder="Enter Exam Name">
+                
+                <label for="exam-description">Exam Description:</label>
+                <textarea id="exam-description" name="exam-description" required placeholder="Enter Exam Description"></textarea>
+                
+                <label for="exam-duration">Exam Duration (minutes):</label>
+                <input type="number" id="exam-duration" name="exam-duration" required placeholder="Enter Exam Duration">
+                
+                <label for="exam-date">Exam Date:</label>
+                <input type="date" id="exam-date" name="exam-date" required>
+                
+                <label for="exam-time">Exam Time:</label>
+                <input type="time" id="exam-time" name="exam-time" required>
+                
+                <label for="exam-questions">Number of Questions:</label>
+                <input type="number" id="exam-questions" name="exam-questions" required placeholder="Enter Number of Questions">
+                
+                <label for="exam-type">Exam Type:</label>
+                <select id="exam-type" name="exam-type" required>
+                    <option value="mcq">Multiple Choice Questions (MCQ)</option>
+                    <option value="descriptive">Descriptive</option>
+                    <option value="mixed">Mixed</option>
+                </select>
+                
+                <button type="submit">Create Exam</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
