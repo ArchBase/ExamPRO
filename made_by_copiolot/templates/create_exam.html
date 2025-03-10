@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Exam</title>
+</head>
+<body>
+    <h1>Create Exam</h1>
+    <form method="POST">
+        Title: <input type="text" name="title"><br>
+        Total Marks: <input type="number" name="total_marks"><br>
+        <h2>Questions</h2>
+        <div id="questions">
+            <div>
+                Question: <input type="text" name="question_text"><br>
+            </div>
+        </div>
+        <button type="button" onclick="addQuestion()">Add Question</button><br>
+        <button type="submit">Create Exam</button>
+    </form>
+    <script>
+        function addQuestion() {
+            var div = document.createElement('div');
+            div.innerHTML = 'Question: <input type="text" name="question_text"><br>';
+            document.getElementById('questions').appendChild(div);
+        }
+    </script>
+</body>
+</html>

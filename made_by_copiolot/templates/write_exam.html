@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Write Exam</title>
+</head>
+<body>
+    <h1>Write Exam</h1>
+    <form method="POST">
+        {% for question in questions %}
+            <p>{{ question[2] }}</p>
+            <textarea name="answer_{{ question[0] }}"></textarea><br>
+        {% endfor %}
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
