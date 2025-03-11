@@ -1,0 +1,295 @@
+/* General Styles */
+body {
+    /*font-family: 'Arial', sans-serif;*/
+     /*font-family: 'Roboto', sans-serif;*/
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+/* Navbar */
+header {
+    background-color: #1a237e;
+    padding: 20px 50px; /* Increased padding for a larger navbar */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Navbar Layout */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 2000px; /* Increased width */
+    height: 80px; /* Increased navbar height */
+    margin: auto;
+}
+
+/* Logo Styling */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 50px; /* Space between logo and text */
+    color: #fff;
+    font-size: 28px; /* Increased size */
+    font-weight: bold;
+    flex-grow: 1; /* Pushes nav links to the right */
+}
+
+.logo img {
+    height: 15px; /* Adjust logo size */
+    width: auto;
+}
+
+/* Navigation Links */
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 25px; /* Increased spacing */
+}
+
+.nav-links li {
+    display: inline;
+}
+
+.nav-links a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 30px; /* Increased font size */
+    padding: 12px 16px; /* Bigger touch area */
+    transition: 0.3s;
+}
+
+.nav-links a:hover {
+    background: #3949ab;
+    border-radius: 5px;
+}
+
+/* Login Button */
+.btn {
+    background: #ffca28;
+    padding: 10px 18px; /* Increased padding */
+    color: #1a237e;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 50px;
+}
+
+/* Hero Section */
+.hero {
+    background: url('https://source.unsplash.com/1600x900/?education,learning') no-repeat center center/cover;
+    height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: white;
+    position: relative;
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    top: 0;
+    left: 0;
+}
+
+.hero-content {
+    z-index: 1;
+    max-width: 600px;
+}
+
+.hero h1 {
+    font-size: 40px;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 25px;
+    margin-bottom: 30px;
+}
+
+.hero .btn {
+    background: #ffca28;
+    color: #1a237e;
+    padding: 10px 20px;
+    font-size: 50px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+.cta-button {
+    display: inline-block;  /* Makes it behave like a button */
+    background-color: #1a73e8;  /* Blue background */
+    color: white;  /* White text */
+    padding: 12px 24px;  /* Padding for button shape */
+    font-size: 18px;  /* Font size */
+    font-weight: bold;
+    text-decoration: none;  /* Removes underline */
+    border-radius: 5px;  /* Slightly rounded edges */
+    transition: background 0.3s ease-in-out;
+}
+
+.cta-button:hover {
+    background-color: #1558b0; /* Darker blue on hover */
+}
+
+
+/* Features Section */
+.features {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+}
+
+.features h2 {
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+.feature-grid {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.feature-item {
+    width: 300px;
+    padding: 20px;
+    background: #e8eaf6;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.feature-item i {
+    font-size: 40px;
+    color: #1a237e;
+    margin-bottom: 10px;
+}
+
+.feature-item h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px;
+    background: #1a237e;
+    color: white;
+    margin-top: 20px;
+}
+/* Logo Container */
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between logo and text */
+}
+
+/* Logo Image */
+.logo {
+    width: 100px;  /* Adjust size as needed */
+    height: auto;
+}
+
+/* Site Name */
+.site-name {
+   
+    font-size: 50px;
+    font-weight: bold;
+    color: white;
+    row-gap: 10px;
+
+}
+
+
+/* Modal Content */
+/* Modal Background */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Modal Content */
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    
+    /* ✅ Make the modal window bigger */
+    width: 500px;  /* Increase width */
+    max-width: 90%; /* Prevents overflow on small screens */
+    height: 350px;  /* Increase height */
+
+    /* ✅ Ensures absolute positioning works inside */
+    position: relative;
+}
+
+/* Close Button */
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    cursor: pointer;
+    color: #555;
+    font-weight: bold;
+}
+
+.close-btn:hover {
+    color: red;
+}
+
+
+/* Login Options Layout */
+.login-options {
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+    margin-top: 60px;
+}
+
+/* Individual Login Option */
+.login-option {
+    text-align: center;
+    transition: 0.3s;
+}
+
+.login-option img {
+    width: 80px;  /* ✅ Increase icon size */
+    height: 80px;
+    margin-bottom: 10px;
+}
+
+.login-option a {
+    display: block;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+    color: #1a237e;
+    padding: 10px 15px;
+    border-radius: 5px;
+    background-color: #ffca28; /* Button color */
+    transition: 0.3s;
+}
+
+.login-option a:hover {
+    background-color: #ffa000;
+}
+
