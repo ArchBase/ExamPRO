@@ -1,0 +1,97 @@
+/* General Styling */
+body {
+   /* font-family: 'Arial', sans-serif;*/
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+    font-size: 20px;
+}
+
+/* Page Container */
+.container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    text-align: center;
+
+}
+
+/* Exam Summary */
+.exam-summary {
+    font-size: 20px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgb(67, 67, 223);
+    border-radius: 8px;
+    color: white;
+}
+
+/* Form Styling */
+form {
+    text-align: left;
+}
+
+/* Question Box */
+.question-box {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    
+}
+
+/* Labels */
+label {
+    font-weight: bold;
+    font-size: 25px;
+}
+
+/* Readonly Textarea */
+textarea {
+    width: 100%;
+    height: 60px;
+    resize: none;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #fff;
+    font-size: 18px;
+}
+
+/* Marks Display (Readonly without Up/Down Arrows) */
+input[type="number"] {
+    width: 60px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #fff;
+    text-align: center;
+    font-weight: bold;
+    appearance: none; /* Removes up/down arrows */
+    -moz-appearance: textfield; /* For Firefox */
+}
+
+/* Close Button */
+/* Close Button */
+#close-btn {
+    display: block;
+    width: 50%;
+    padding: 10px;
+    background-color: #d32f2f;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 20px auto 0; /* Centers the button */
+    text-align: center;
+}
+
+#close-btn:hover {
+    background-color: #b71c1c;
+}
