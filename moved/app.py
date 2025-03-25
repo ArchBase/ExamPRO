@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, session
 import sqlite3
 import random
+from valuation import evaluate_answer
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -132,28 +133,37 @@ def dashboard_teacher():
 def write_exam(exam_id):
     if 'student_id' not in session:
         return redirect('/login_student')
+    
     student_id = session['student_id']
+    
     if request.method == 'POST':
         with sqlite3.connect('database.db') as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT id FROM Question WHERE exam_id = ?", (exam_id,))
+            cursor.execute("SELECT id, question_text, total_marks FROM Question WHERE exam_id = ?", (exam_id,))
             questions = cursor.fetchall()
+            
             total_earned = 0
-            for question in questions:
-                question_id = question[0]
-                answer_text = request.form[f'answer_{question_id}']
-                earned_marks = random.randint(0, 10)  # Random marks for simplicity
-                total_earned += earned_marks
+            for question_id, question_text, max_marks in questions:
+                answer_text = request.form.get(f'answer_{question_id}', '').strip()
+                
+                # AI-based evaluation
+                earned_marks = evaluate_answer(question_text, answer_text, max_marks)
+                total_earned += earned_marks if earned_marks != -1 else 0  # Ignore if AI fails
+                
                 cursor.execute("INSERT INTO Answer (question_id, student_id, answer_text, earned_marks) VALUES (?, ?, ?, ?)",
                                (question_id, student_id, answer_text, earned_marks))
+            
             cursor.execute("INSERT INTO Attended (student_id, exam_id, earned_total) VALUES (?, ?, ?)",
                            (student_id, exam_id, total_earned))
             conn.commit()
+        
         return redirect('/dashboard_student')
+    
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM Question WHERE exam_id = ?", (exam_id,))
         questions = cursor.fetchall()
+    
     return render_template('write_exam.html', questions=questions)
 
 @app.route('/view_result/<int:exam_id>')
