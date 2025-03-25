@@ -4,8 +4,12 @@
     <title>Teacher Dashboard</title>
 </head>
 <body>
-    <h1>Teacher Dashboard</h1>
+    <h1>Welcome, {{ username }}!</h1>
+    <a href="/logout">Logout</a>  <!-- Logout link -->
+
+    <h2>Manage Exams</h2>
     <a href="/create_exam">Create Exam</a><br>
+
     <h2>Created Exams</h2>
     <ul>
         {% for exam in exams %}

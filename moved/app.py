@@ -126,30 +126,52 @@ def login_teacher():
                 return redirect('/dashboard_teacher')
     return render_template('login_teacher.html')
 
+@app.route('/logout')
+def logout():
+    session.clear()  # Clears all session data
+    return redirect('/')  # Redirect to home page or login page
+
+
 @app.route('/dashboard_student', methods=['GET', 'POST'])
 def dashboard_student():
     if 'student_id' not in session:
         return redirect('/login_student')
-    if request.method == 'POST':
-        exam_code = request.form['exam_code']
-        return redirect(f'/write_exam/{exam_code}')
+
     student_id = session['student_id']
+
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
+        # Fetch username
+        cursor.execute("SELECT username FROM Student WHERE id = ?", (student_id,))
+        student = cursor.fetchone()
+        username = student[0] if student else "Unknown"
+
+        # Fetch attended exams
         cursor.execute("SELECT Exam.id, Exam.title, Attended.earned_total FROM Exam JOIN Attended ON Exam.id = Attended.exam_id WHERE Attended.student_id = ?", (student_id,))
         exams = cursor.fetchall()
-    return render_template('dashboard_student.html', exams=exams)
+
+    return render_template('dashboard_student.html', username=username, exams=exams)
+
 
 @app.route('/dashboard_teacher')
 def dashboard_teacher():
     if 'teacher_id' not in session:
         return redirect('/login_teacher')
+
     teacher_id = session['teacher_id']
+
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
+        # Fetch username
+        cursor.execute("SELECT username FROM Teacher WHERE id = ?", (teacher_id,))
+        teacher = cursor.fetchone()
+        username = teacher[0] if teacher else "Unknown"
+
+        # Fetch created exams
         cursor.execute("SELECT * FROM Exam WHERE teacher_id = ?", (teacher_id,))
         exams = cursor.fetchall()
-    return render_template('dashboard_teacher.html', exams=exams)
+
+    return render_template('dashboard_teacher.html', username=username, exams=exams)
 
 @app.route('/write_exam/<int:exam_id>', methods=['GET', 'POST'])
 def write_exam(exam_id):

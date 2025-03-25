@@ -4,11 +4,15 @@
     <title>Student Dashboard</title>
 </head>
 <body>
-    <h1>Student Dashboard</h1>
+    <h1>Welcome, {{ username }}!</h1>
+    <a href="/logout">Logout</a>  <!-- Logout link -->
+
+    <h2>Start an Exam</h2>
     <form method="POST">
         Exam Code: <input type="text" name="exam_code"><br>
         <button type="submit">Start Exam</button>
     </form>
+
     <h2>Participated Exams</h2>
     <ul>
         {% for exam in exams %}
