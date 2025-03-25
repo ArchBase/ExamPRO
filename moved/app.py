@@ -167,25 +167,36 @@ def view_result(exam_id):
         result = cursor.fetchone()
     return render_template('view_result.html', result=result)
 
+
 @app.route('/create_exam', methods=['GET', 'POST'])
 def create_exam():
     if 'teacher_id' not in session:
         return redirect('/login_teacher')
+    
     if request.method == 'POST':
         title = request.form['title']
-        total_marks = request.form['total_marks']
-        questions = request.form.getlist('question_text')
+        questions = request.form.getlist('question_text[]')
+        question_marks = request.form.getlist('question_marks[]')
+
+        # Calculate total marks dynamically
+        total_marks = sum(map(int, question_marks))
+
         with sqlite3.connect('database.db') as conn:
             cursor = conn.cursor()
             cursor.execute("INSERT INTO Exam (teacher_id, title, total_marks) VALUES (?, ?, ?)",
                            (session['teacher_id'], title, total_marks))
             exam_id = cursor.lastrowid
-            for question_text in questions:
+
+            for question_text, marks in zip(questions, question_marks):
                 cursor.execute("INSERT INTO Question (exam_id, question_text, total_marks) VALUES (?, ?, ?)",
-                               (exam_id, question_text, total_marks))
+                               (exam_id, question_text, marks))
+
             conn.commit()
+
         return redirect('/dashboard_teacher')
+    
     return render_template('create_exam.html')
+
 
 @app.route('/exam_details/<int:exam_id>')
 def exam_details(exam_id):
