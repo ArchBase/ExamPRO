@@ -6,6 +6,7 @@ from valuation import evaluate_answer
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
+
 def init_db():
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
@@ -135,10 +136,18 @@ def write_exam(exam_id):
         return redirect('/login_student')
     
     student_id = session['student_id']
-    
-    if request.method == 'POST':
-        with sqlite3.connect('database.db') as conn:
-            cursor = conn.cursor()
+
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+
+        # Check if student has already attempted the exam
+        cursor.execute("SELECT id FROM Attended WHERE student_id = ? AND exam_id = ?", (student_id, exam_id))
+        attempted = cursor.fetchone()
+
+        if attempted:
+            return render_template('message.html', message="You have already attempted this exam.")
+
+        if request.method == 'POST':
             cursor.execute("SELECT id, question_text, total_marks FROM Question WHERE exam_id = ?", (exam_id,))
             questions = cursor.fetchall()
             
@@ -157,25 +166,39 @@ def write_exam(exam_id):
                            (student_id, exam_id, total_earned))
             conn.commit()
         
-        return redirect('/dashboard_student')
+            return render_template('message.html', message="Exam submitted successfully!")
     
-    with sqlite3.connect('database.db') as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM Question WHERE exam_id = ?", (exam_id,))
-        questions = cursor.fetchall()
+    cursor.execute("SELECT * FROM Question WHERE exam_id = ?", (exam_id,))
+    questions = cursor.fetchall()
     
     return render_template('write_exam.html', questions=questions)
+
 
 @app.route('/view_result/<int:exam_id>')
 def view_result(exam_id):
     if 'student_id' not in session:
         return redirect('/login_student')
     student_id = session['student_id']
+    
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
+        
+        # Fetch total earned marks
         cursor.execute("SELECT earned_total FROM Attended WHERE student_id = ? AND exam_id = ?", (student_id, exam_id))
         result = cursor.fetchone()
-    return render_template('view_result.html', result=result)
+        
+        # Fetch each question, student's answer, earned marks, and max marks
+        cursor.execute("""
+            SELECT Question.question_text, Answer.answer_text, Answer.earned_marks, Question.total_marks
+            FROM Answer
+            JOIN Question ON Answer.question_id = Question.id
+            WHERE Answer.student_id = ? AND Question.exam_id = ?
+        """, (student_id, exam_id))
+        
+        answers = cursor.fetchall()  # List of (question_text, answer_text, earned_marks, max_marks)
+
+    return render_template('view_result.html', result=result, answers=answers)
+
 
 
 @app.route('/create_exam', methods=['GET', 'POST'])

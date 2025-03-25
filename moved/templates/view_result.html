@@ -5,6 +5,25 @@
 </head>
 <body>
     <h1>View Result</h1>
-    <p>Your total marks: {{ result[0] }}</p>
+    <p><strong>Your total marks:</strong> {{ result[0] }}</p>
+
+    <h2>Detailed Breakdown:</h2>
+    <table border="1">
+        <tr>
+            <th>Question</th>
+            <th>Your Answer</th>
+            <th>Earned Marks</th>
+            <th>Max Marks</th>
+        </tr>
+        {% for answer in answers %}
+        <tr>
+            <td>{{ answer[0] }}</td>
+            <td>{{ answer[1] }}</td>
+            <td>{{ answer[2] }}</td>
+            <td>{{ answer[3] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
 </body>
 </html>
