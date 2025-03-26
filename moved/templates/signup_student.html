@@ -1,64 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+
     <title>Student Signup</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #1E3A8A, #3B82F6);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-        }
-        .container {
-            background: white;
-            color: #1E3A8A;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            width: 300px;
-            transform: translateY(-100vh);
-            animation: slideIn 1s ease-out forwards;
-        }
-        h1 {
-            margin-bottom: 20px;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #1E3A8A;
-            border-radius: 5px;
-        }
-        button {
-            background: #1E3A8A;
-            color: white;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        button:hover {
-            background: #3B82F6;
-        }
-        @keyframes slideIn {
-            from {
-                transform: translateY(-100vh);
-            }
-            to {
-                transform: translateY(0);
-            }
-        }
-    </style>
+   
 </head>
 <body>
     <div class="container">
