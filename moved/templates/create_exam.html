@@ -1,6 +1,10 @@
 <!DOCTYPE html> 
 <html>
 <head>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Create Exam</title>
     <script>
         function addQuestion() {
@@ -9,6 +13,7 @@
                 <div>
                     Question: <input type="text" name="question_text[]" required>
                     Marks: <input type="number" name="question_marks[]" min="1" required oninput="calculateTotalMarks()">
+                    Answer Key: <input type="text" name="answer_key[]" required>  <!-- ✅ New field -->
                     <button type="button" onclick="removeQuestion(this)">Remove</button>
                     <br>
                 </div>`;
@@ -41,6 +46,7 @@
             <div>
                 Question: <input type="text" name="question_text[]" required>
                 Marks: <input type="number" name="question_marks[]" min="1" required oninput="calculateTotalMarks()">
+                Answer Key: <input type="text" name="answer_key[]" required>  <!-- ✅ New field -->
                 <button type="button" onclick="removeQuestion(this)">Remove</button>
                 <br>
             </div>
