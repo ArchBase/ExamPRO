@@ -13,7 +13,7 @@ def evaluate_answer(question, answer, answer_key, max_score):
               "Say only the marks, don't explain anything else.")
 
     for _ in range(3):  # Try 3 times if AI doesn't return a valid number
-        response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": prompt}])
+        response = ollama.chat(model="deepseek-r1:8b", messages=[{"role": "user", "content": prompt}])
         response_text = response['message']['content'].strip()
 
         print(f"\n****************************************************************\nprompt: {prompt}")
