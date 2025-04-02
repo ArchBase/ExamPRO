@@ -7,6 +7,45 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 
+@app.route('/review_answers/<int:exam_id>/<int:student_id>', methods=['GET', 'POST'])
+def review_answers(exam_id, student_id):
+    if 'teacher_id' not in session:
+        return redirect('/login_teacher')
+
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+
+        # Fetch exam title
+        cursor.execute("SELECT title FROM Exam WHERE id = ?", (exam_id,))
+        exam_title = cursor.fetchone()[0]
+
+        # Fetch student name
+        cursor.execute("SELECT username FROM Student WHERE id = ?", (student_id,))
+        student_name = cursor.fetchone()[0]
+
+        # Fetch student's answers with AI marks
+        cursor.execute("""
+            SELECT Question.question_text, Answer.answer_text, Answer.earned_marks, Question.total_marks, Answer.feedback, Answer.id
+            FROM Answer
+            JOIN Question ON Answer.question_id = Question.id
+            WHERE Answer.student_id = ? AND Question.exam_id = ?
+        """, (student_id, exam_id))
+        answers = cursor.fetchall()  # (question_text, answer_text, earned_marks, total_marks, feedback, answer_id)
+
+    if request.method == 'POST':
+        with sqlite3.connect('database.db') as conn:
+            cursor = conn.cursor()
+            for answer in answers:
+                answer_id = answer[5]
+                new_marks = request.form.get(f'marks_{answer_id}', answer[2])
+                cursor.execute("UPDATE Answer SET earned_marks = ? WHERE id = ?", (new_marks, answer_id))
+            conn.commit()
+        return redirect(f'/exam_details/{exam_id}')  # Redirect back to exam details after saving
+
+    return render_template('review_answers.html', exam_id=exam_id, student_id=student_id, exam_title=exam_title, student_name=student_name, answers=answers)
+
+
+
 def evaluate_answer(question, answer, answer_key, max_score):
     prompt = (f"'{answer}' this is an answer written by a student for the question '{question}'. "
               f"The marking condition is '{answer_key}'. Based on this, how many marks out of {max_score} should be given? "
@@ -281,14 +320,24 @@ def create_exam():
 def exam_details(exam_id):
     if 'teacher_id' not in session:
         return redirect('/login_teacher')
+
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
+
+        # Fetch exam details
         cursor.execute("SELECT * FROM Exam WHERE id = ?", (exam_id,))
         exam = cursor.fetchone()
-        cursor.execute("SELECT Student.username, Attended.earned_total FROM Attended JOIN Student ON Attended.student_id = Student.id WHERE Attended.exam_id = ?", (exam_id,))
-        students = cursor.fetchall()
-    return render_template('exam_details.html', exam=exam, students=students)
 
+        # Fetch students who attended
+        cursor.execute("""
+            SELECT Student.username, Attended.earned_total, Student.id
+            FROM Attended
+            JOIN Student ON Attended.student_id = Student.id
+            WHERE Attended.exam_id = ?
+        """, (exam_id,))
+        students = cursor.fetchall()  # (username, earned_total, student_id)
+
+    return render_template('exam_details.html', exam=exam, students=students)
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
