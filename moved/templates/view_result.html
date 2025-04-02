@@ -4,7 +4,6 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>View Result</title>
 </head>
 <body>
@@ -18,6 +17,7 @@
             <th>Your Answer</th>
             <th>Earned Marks</th>
             <th>Max Marks</th>
+            <th>AI Feedback</th>
         </tr>
         {% for answer in answers %}
         <tr>
@@ -25,6 +25,7 @@
             <td>{{ answer[1] }}</td>
             <td>{{ answer[2] }}</td>
             <td>{{ answer[3] }}</td>
+            <td>{{ answer[4] }}</td>
         </tr>
         {% endfor %}
     </table>

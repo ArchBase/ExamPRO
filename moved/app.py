@@ -12,8 +12,12 @@ def evaluate_answer(question, answer, answer_key, max_score):
               f"The marking condition is '{answer_key}'. Based on this, how many marks out of {max_score} should be given? "
               "Say only the marks, don't explain anything else.")
 
+    feedback_prompt = (f"'{answer}' is an answer written by a student for the question '{question}'. "
+                       f"The correct answer should follow this guideline: '{answer_key}'. "
+                       "Provide constructive feedback on how well the student answered and what could be improved.")
+
     for _ in range(3):  # Try 3 times if AI doesn't return a valid number
-        response = ollama.chat(model="deepseek-r1:8b", messages=[{"role": "user", "content": prompt}])
+        response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": prompt}])
         response_text = response['message']['content'].strip()
 
         print(f"\n****************************************************************\nprompt: {prompt}")
@@ -25,11 +29,17 @@ def evaluate_answer(question, answer, answer_key, max_score):
             score = int(match.group())
             if score <= max_score:
                 print(f"Score: {score}")
-                return score
-            continue
-        print("AI failed to provide a valid score. Trying again...")
 
-    return -1  # Return -1 if AI fails after 3 attempts
+                # Get AI feedback
+                feedback_response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": feedback_prompt}])
+                feedback_text = feedback_response['message']['content'].strip()
+                
+                print(f"\n****************************************************************\nAI Feedback: {feedback_text}")
+
+                return score, feedback_text
+
+    return -1, "AI could not generate feedback."  # Return -1 if AI fails after 3 attempts
+
 
 
 def init_db():
@@ -64,19 +74,20 @@ def init_db():
                             question_id INTEGER,
                             student_id INTEGER,
                             answer_text TEXT,
-                            earned_marks INTEGER)''')
+                            earned_marks INTEGER,
+                            feedback TEXT)''')  # ✅ Added feedback column
         cursor.execute('''CREATE TABLE IF NOT EXISTS Attended (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             student_id INTEGER,
                             exam_id INTEGER,
                             earned_total INTEGER)''')
 
-        # Alter table if it doesn't already have `answer_key`
-        cursor.execute("PRAGMA table_info(Question)")
+        # Alter table if it doesn't already have `feedback`
+        cursor.execute("PRAGMA table_info(Answer)")
         columns = [col[1] for col in cursor.fetchall()]
-        if 'answer_key' not in columns:
-            cursor.execute("ALTER TABLE Question ADD COLUMN answer_key TEXT")
-        
+        if 'feedback' not in columns:
+            cursor.execute("ALTER TABLE Answer ADD COLUMN feedback TEXT")
+
         conn.commit()
 
 
@@ -192,23 +203,21 @@ def write_exam(exam_id):
                 answer_text = request.form.get(f'answer_{question_id}', '').strip()
                 
                 # AI-based evaluation with the answer key
-                earned_marks = evaluate_answer(question_text, answer_text, answer_key, max_marks)
+                earned_marks, feedback = evaluate_answer(question_text, answer_text, answer_key, max_marks)
                 total_earned += earned_marks if earned_marks != -1 else 0  # Ignore if AI fails
                 
-                cursor.execute("INSERT INTO Answer (question_id, student_id, answer_text, earned_marks) VALUES (?, ?, ?, ?)",
-                               (question_id, student_id, answer_text, earned_marks))
+                cursor.execute("INSERT INTO Answer (question_id, student_id, answer_text, earned_marks, feedback) VALUES (?, ?, ?, ?, ?)",
+                               (question_id, student_id, answer_text, earned_marks, feedback))
             
             cursor.execute("INSERT INTO Attended (student_id, exam_id, earned_total) VALUES (?, ?, ?)",
                            (student_id, exam_id, total_earned))
             conn.commit()
         
             return render_template('message.html', message="Exam submitted successfully!")
-    
     cursor.execute("SELECT * FROM Question WHERE exam_id = ?", (exam_id,))
     questions = cursor.fetchall()
     
     return render_template('write_exam.html', questions=questions)
-
 
 
 @app.route('/view_result/<int:exam_id>')
@@ -224,19 +233,17 @@ def view_result(exam_id):
         cursor.execute("SELECT earned_total FROM Attended WHERE student_id = ? AND exam_id = ?", (student_id, exam_id))
         result = cursor.fetchone()
         
-        # Fetch each question, student's answer, earned marks, and max marks
+        # Fetch each question, student's answer, earned marks, max marks, and feedback
         cursor.execute("""
-            SELECT Question.question_text, Answer.answer_text, Answer.earned_marks, Question.total_marks
+            SELECT Question.question_text, Answer.answer_text, Answer.earned_marks, Question.total_marks, Answer.feedback
             FROM Answer
             JOIN Question ON Answer.question_id = Question.id
             WHERE Answer.student_id = ? AND Question.exam_id = ?
         """, (student_id, exam_id))
         
-        answers = cursor.fetchall()  # List of (question_text, answer_text, earned_marks, max_marks)
+        answers = cursor.fetchall()  # List of (question_text, answer_text, earned_marks, max_marks, feedback)
 
     return render_template('view_result.html', result=result, answers=answers)
-
-
 
 @app.route('/create_exam', methods=['GET', 'POST'])
 def create_exam():
