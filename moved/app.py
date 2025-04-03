@@ -7,8 +7,6 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 
-
-
 @app.route('/review_answers/<int:exam_id>/<int:student_id>', methods=['GET', 'POST'])
 def review_answers(exam_id, student_id):
     if 'teacher_id' not in session:
@@ -41,11 +39,13 @@ def review_answers(exam_id, student_id):
         with sqlite3.connect('database.db') as conn:
             cursor = conn.cursor()
 
-            if action == 'update_marks':  # Manual mark editing
+            if action == 'update_marks':  # Manual mark editing & feedback update
                 for answer in answers:
                     answer_id = answer[6]
                     new_marks = request.form.get(f'marks_{answer_id}', answer[3])  # Default to existing marks
-                    cursor.execute("UPDATE Answer SET earned_marks = ? WHERE id = ?", (new_marks, answer_id))
+                    new_feedback = request.form.get(f'feedback_{answer_id}', answer[5])  # Default to existing feedback
+                    cursor.execute("UPDATE Answer SET earned_marks = ?, feedback = ? WHERE id = ?", 
+                                   (new_marks, new_feedback, answer_id))
 
             elif action == 'retry_ai':  # Retry AI evaluation for a specific answer
                 answer_id = int(request.form.get('answer_id'))
@@ -54,7 +54,8 @@ def review_answers(exam_id, student_id):
 
                 new_marks, new_feedback = evaluate_answer(question_text, answer_text, answer_key, max_marks)
 
-                cursor.execute("UPDATE Answer SET earned_marks = ?, feedback = ? WHERE id = ?", (new_marks, new_feedback, answer_id))
+                cursor.execute("UPDATE Answer SET earned_marks = ?, feedback = ? WHERE id = ?", 
+                               (new_marks, new_feedback, answer_id))
 
             conn.commit()
 
