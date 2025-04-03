@@ -45,7 +45,6 @@ def review_answers(exam_id, student_id):
     return render_template('review_answers.html', exam_id=exam_id, student_id=student_id, exam_title=exam_title, student_name=student_name, answers=answers)
 
 
-
 def evaluate_answer(question, answer, answer_key, max_score):
     reasoning_prompt = (f"'{answer}' is an answer written by a student for the question '{question}'. "
                         f"The marking condition is '{answer_key}'. "
@@ -71,27 +70,25 @@ def evaluate_answer(question, answer, answer_key, max_score):
 
         print(f"\n****************************************************************\nLLaMA Extraction: {extract_text}")
 
-        # Extract numerical value from LLaMA response
-        match = re.search(r'\d+', extract_text)
+        # Extract numerical value from LLaMA response (handling decimals)
+        match = re.search(r'\d+(\.\d+)?', extract_text)  # Matches integers and decimals
         if match:
-            score = int(match.group())
+            score = float(match.group())  # Convert to float for decimal support
+            score = round(score, 2)  # Round to 2 decimal places for better accuracy
+
             if score <= max_score:
-                print(f"Score: {score}")
+                print(f"Final Score: {score}")
 
                 # Step 3: Get AI feedback from DeepSeek
-                feedback_prompt = (f"'{answer}' is an answer written by a student for the question '{question}'. "
-                                   f"The marking conditions was: '{answer_key}'. The student got {score} marks."
-                                   "Provide constructive feedback on how well the student answered and what could be improved as if you're talking to the student.")
-                
-                feedback_response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": feedback_prompt}])
-                feedback_text = feedback_response['message']['content'].strip()
+                feedback_text = deepseek_text
 
-                print(f"\n****************************************************************\nAI Feedback: {feedback_text}")
+                print(f"\n****************************************************************\nAI Reasoning: {feedback_text}")
 
                 return score, feedback_text
 
     return -1, "AI could not generate feedback."  # Return -1 if AI fails after 3 attempts
 
+import sqlite3
 
 def init_db():
     with sqlite3.connect('database.db') as conn:
@@ -104,48 +101,42 @@ def init_db():
                             reg_no TEXT,
                             email TEXT,
                             password TEXT)''')
+
         cursor.execute('''CREATE TABLE IF NOT EXISTS Teacher (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             username TEXT,
                             email TEXT,
                             password TEXT)''')
+
         cursor.execute('''CREATE TABLE IF NOT EXISTS Exam (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             teacher_id INTEGER,
                             title TEXT,
                             total_marks INTEGER)''')
+
         cursor.execute('''CREATE TABLE IF NOT EXISTS Question (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             exam_id INTEGER,
                             question_text TEXT,
                             total_marks INTEGER,
-                            answer_key TEXT)''')  # ✅ Added answer_key column
+                            answer_key TEXT)''')  # ✅ Includes answer key for auto-grading
+
         cursor.execute('''CREATE TABLE IF NOT EXISTS Answer (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             question_id INTEGER,
                             student_id INTEGER,
                             answer_text TEXT,
-                            earned_marks INTEGER,
-                            feedback TEXT)''')  # ✅ Added feedback column
+                            earned_marks REAL,  -- ✅ Changed from INTEGER to REAL
+                            feedback TEXT)''')  # ✅ Feedback column included
+
         cursor.execute('''CREATE TABLE IF NOT EXISTS Attended (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
                             student_id INTEGER,
                             exam_id INTEGER,
-                            earned_total INTEGER)''')
-
-        # Alter table if it doesn't already have `feedback`
-        cursor.execute("PRAGMA table_info(Answer)")
-        columns = [col[1] for col in cursor.fetchall()]
-        if 'feedback' not in columns:
-            cursor.execute("ALTER TABLE Answer ADD COLUMN feedback TEXT")
-
-        cursor.execute("PRAGMA table_info(Answer)")
-        columns = [col[1] for col in cursor.fetchall()]
-        if 'ai_reasoning' not in columns:
-            cursor.execute("ALTER TABLE Answer ADD COLUMN ai_reasoning TEXT")
-
+                            earned_total REAL)''')  # ✅ Changed from INTEGER to REAL
 
         conn.commit()
+
 
 
 @app.route('/')
