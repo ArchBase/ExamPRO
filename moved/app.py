@@ -7,6 +7,8 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
 
+
+
 @app.route('/review_answers/<int:exam_id>/<int:student_id>', methods=['GET', 'POST'])
 def review_answers(exam_id, student_id):
     if 'teacher_id' not in session:
@@ -25,22 +27,38 @@ def review_answers(exam_id, student_id):
 
         # Fetch student's answers with AI marks
         cursor.execute("""
-            SELECT Question.question_text, Answer.answer_text, Answer.earned_marks, Question.total_marks, Answer.feedback, Answer.id
+            SELECT Question.id, Question.question_text, Answer.answer_text, Answer.earned_marks, 
+                   Question.total_marks, Answer.feedback, Answer.id
             FROM Answer
             JOIN Question ON Answer.question_id = Question.id
             WHERE Answer.student_id = ? AND Question.exam_id = ?
         """, (student_id, exam_id))
-        answers = cursor.fetchall()  # (question_text, answer_text, earned_marks, total_marks, feedback, answer_id)
+        answers = cursor.fetchall()  # (question_id, question_text, answer_text, earned_marks, total_marks, feedback, answer_id)
 
     if request.method == 'POST':
+        action = request.form.get('action')
+
         with sqlite3.connect('database.db') as conn:
             cursor = conn.cursor()
-            for answer in answers:
-                answer_id = answer[5]
-                new_marks = request.form.get(f'marks_{answer_id}', answer[2])
-                cursor.execute("UPDATE Answer SET earned_marks = ? WHERE id = ?", (new_marks, answer_id))
+
+            if action == 'update_marks':  # Manual mark editing
+                for answer in answers:
+                    answer_id = answer[6]
+                    new_marks = request.form.get(f'marks_{answer_id}', answer[3])  # Default to existing marks
+                    cursor.execute("UPDATE Answer SET earned_marks = ? WHERE id = ?", (new_marks, answer_id))
+
+            elif action == 'retry_ai':  # Retry AI evaluation for a specific answer
+                answer_id = int(request.form.get('answer_id'))
+                cursor.execute("SELECT Question.question_text, Answer.answer_text, Question.answer_key, Question.total_marks FROM Answer JOIN Question ON Answer.question_id = Question.id WHERE Answer.id = ?", (answer_id,))
+                question_text, answer_text, answer_key, max_marks = cursor.fetchone()
+
+                new_marks, new_feedback = evaluate_answer(question_text, answer_text, answer_key, max_marks)
+
+                cursor.execute("UPDATE Answer SET earned_marks = ?, feedback = ? WHERE id = ?", (new_marks, new_feedback, answer_id))
+
             conn.commit()
-        return redirect(f'/exam_details/{exam_id}')  # Redirect back to exam details after saving
+
+        return redirect(request.url)  # Refresh the page to show updated data
 
     return render_template('review_answers.html', exam_id=exam_id, student_id=student_id, exam_title=exam_title, student_name=student_name, answers=answers)
 

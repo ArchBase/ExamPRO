@@ -19,22 +19,35 @@
                 <th>Max Marks</th>
                 <th>Teacher Marks</th>
                 <th>Feedback</th>
+                <th>Actions</th>
             </tr>
             {% for answer in answers %}
             <tr>
-                <td>{{ answer[0] }}</td> <!-- Question -->
-                <td>{{ answer[1] }}</td> <!-- Student Answer -->
-                <td>{{ answer[2] }}</td> <!-- AI Marks -->
-                <td>{{ answer[3] }}</td> <!-- Max Marks -->
+                <td>{{ answer[1] }}</td> <!-- Question Text -->
+                <td>{{ answer[2] }}</td> <!-- Student's Answer -->
+                <td>{{ answer[3] }}</td> <!-- AI Assigned Marks -->
+                <td>{{ answer[4] }}</td> <!-- Max Marks -->
+                
+                <!-- Editable Teacher Marks -->
                 <td>
-                    <input type="number" name="marks_{{ answer[5] }}" value="{{ answer[2] }}" min="0" max="{{ answer[3] }}">
+                    <input type="number" name="marks_{{ answer[6] }}" value="{{ answer[3] }}" step="0.01" min="0" max="{{ answer[4] }}">
                 </td>
-                <td>{{ answer[4] }}</td> <!-- Feedback -->
+
+                <td>{{ answer[5] }}</td> <!-- AI Feedback -->
+
+                <td>
+                    <!-- Retry AI Evaluation Button -->
+                    <button type="submit" name="action" value="retry_ai">
+                        <input type="hidden" name="answer_id" value="{{ answer[6] }}">
+                        Retry AI Evaluation
+                    </button>
+                </td>
             </tr>
             {% endfor %}
         </table>
+        
         <br>
-        <button type="submit">Save Changes</button>
+        <button type="submit" name="action" value="update_marks">Save Marks</button>
     </form>
 </body>
 </html>
