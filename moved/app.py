@@ -47,38 +47,50 @@ def review_answers(exam_id, student_id):
 
 
 def evaluate_answer(question, answer, answer_key, max_score):
-    prompt = (f"'{answer}' this is an answer written by a student for the question '{question}'. "
-              f"The marking condition is '{answer_key}'. Based on this, how many marks out of {max_score} should be given? "
-              "Say only the marks, don't explain anything else.")
+    reasoning_prompt = (f"'{answer}' is an answer written by a student for the question '{question}'. "
+                        f"The marking condition is '{answer_key}'. "
+                        f"Carefully evaluate the answer and decide how many marks out of {max_score} should be given. "
+                        f"Explain your reasoning in detail before stating the final score.")
 
-    feedback_prompt = (f"'{answer}' is an answer written by a student for the question '{question}'. "
-                       f"The correct answer should follow this guideline: '{answer_key}'. "
-                       "Provide constructive feedback on how well the student answered and what could be improved.")
+    extract_prompt_template = ("Here is a detailed evaluation of a student's answer:\n\n"
+                               "{deepseek_response}\n\n"
+                               f"From the above evaluation, extract only the final marks (out of {max_score}). "
+                               "Do not include any explanations, just return the number.")
 
     for _ in range(3):  # Try 3 times if AI doesn't return a valid number
-        response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": prompt}])
-        response_text = response['message']['content'].strip()
+        # Step 1: Get detailed reasoning from DeepSeek
+        deepseek_response = ollama.chat(model="deepseek-r1:8b", messages=[{"role": "user", "content": reasoning_prompt}])
+        deepseek_text = deepseek_response['message']['content'].strip()
 
-        print(f"\n****************************************************************\nprompt: {prompt}")
-        print(f"\n****************************************************************\nAI response: {response_text}")
+        print(f"\n****************************************************************\nDeepSeek Response: {deepseek_text}")
 
-        # Extract numerical value from response
-        match = re.search(r'\d+', response_text)
+        # Step 2: Extract marks using LLaMA
+        extract_prompt = extract_prompt_template.format(deepseek_response=deepseek_text)
+        extract_response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": extract_prompt}])
+        extract_text = extract_response['message']['content'].strip()
+
+        print(f"\n****************************************************************\nLLaMA Extraction: {extract_text}")
+
+        # Extract numerical value from LLaMA response
+        match = re.search(r'\d+', extract_text)
         if match:
             score = int(match.group())
             if score <= max_score:
                 print(f"Score: {score}")
 
-                # Get AI feedback
+                # Step 3: Get AI feedback from DeepSeek
+                feedback_prompt = (f"'{answer}' is an answer written by a student for the question '{question}'. "
+                                   f"The marking conditions was: '{answer_key}'. The student got {score} marks."
+                                   "Provide constructive feedback on how well the student answered and what could be improved as if you're talking to the student.")
+                
                 feedback_response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": feedback_prompt}])
                 feedback_text = feedback_response['message']['content'].strip()
-                
+
                 print(f"\n****************************************************************\nAI Feedback: {feedback_text}")
 
                 return score, feedback_text
 
     return -1, "AI could not generate feedback."  # Return -1 if AI fails after 3 attempts
-
 
 
 def init_db():
@@ -126,6 +138,12 @@ def init_db():
         columns = [col[1] for col in cursor.fetchall()]
         if 'feedback' not in columns:
             cursor.execute("ALTER TABLE Answer ADD COLUMN feedback TEXT")
+
+        cursor.execute("PRAGMA table_info(Answer)")
+        columns = [col[1] for col in cursor.fetchall()]
+        if 'ai_reasoning' not in columns:
+            cursor.execute("ALTER TABLE Answer ADD COLUMN ai_reasoning TEXT")
+
 
         conn.commit()
 
