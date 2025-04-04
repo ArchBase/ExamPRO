@@ -5,6 +5,34 @@ import ollama
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
+import threading
+
+def evaluate_in_background(student_id, exam_id):
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT id, question_text, total_marks, answer_key FROM Question WHERE exam_id = ?", (exam_id,))
+        questions = cursor.fetchall()
+
+        total_earned = 0
+        for question_id, question_text, max_marks, answer_key in questions:
+            cursor.execute("SELECT answer_text FROM Answer WHERE student_id = ? AND question_id = ?", (student_id, question_id))
+            result = cursor.fetchone()
+            if result:
+                answer_text = result[0]
+
+                # AI-based evaluation
+                earned_marks, feedback = evaluate_answer(question_text, answer_text, answer_key, max_marks)
+                total_earned += earned_marks if earned_marks != -1 else 0
+
+                # Update the Answer row with marks and feedback
+                cursor.execute("UPDATE Answer SET earned_marks = ?, feedback = ? WHERE student_id = ? AND question_id = ?",
+                               (earned_marks, feedback, student_id, question_id))
+
+        # Update the Attended row
+        cursor.execute("UPDATE Attended SET earned_total = ? WHERE student_id = ? AND exam_id = ?",
+                       (total_earned, student_id, exam_id))
+        conn.commit()
 
 
 @app.route('/review_answers/<int:exam_id>/<int:student_id>', methods=['GET', 'POST'])
@@ -248,42 +276,37 @@ def dashboard_teacher():
 def write_exam(exam_id):
     if 'student_id' not in session:
         return redirect('/login_student')
-    
+
     student_id = session['student_id']
 
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
 
-        # Check if student has already attempted the exam
         cursor.execute("SELECT id FROM Attended WHERE student_id = ? AND exam_id = ?", (student_id, exam_id))
         attempted = cursor.fetchone()
-
         if attempted:
             return render_template('message.html', message="You have already attempted this exam.")
 
         if request.method == 'POST':
-            cursor.execute("SELECT id, question_text, total_marks, answer_key FROM Question WHERE exam_id = ?", (exam_id,))
+            cursor.execute("SELECT id FROM Question WHERE exam_id = ?", (exam_id,))
             questions = cursor.fetchall()
-            
-            total_earned = 0
-            for question_id, question_text, max_marks, answer_key in questions:
+
+            for (question_id,) in questions:
                 answer_text = request.form.get(f'answer_{question_id}', '').strip()
-                
-                # AI-based evaluation with the answer key
-                earned_marks, feedback = evaluate_answer(question_text, answer_text, answer_key, max_marks)
-                total_earned += earned_marks if earned_marks != -1 else 0  # Ignore if AI fails
-                
-                cursor.execute("INSERT INTO Answer (question_id, student_id, answer_text, earned_marks, feedback) VALUES (?, ?, ?, ?, ?)",
-                               (question_id, student_id, answer_text, earned_marks, feedback))
-            
-            cursor.execute("INSERT INTO Attended (student_id, exam_id, earned_total) VALUES (?, ?, ?)",
-                           (student_id, exam_id, total_earned))
+                cursor.execute("INSERT INTO Answer (question_id, student_id, answer_text, earned_marks, feedback) VALUES (?, ?, ?, NULL, NULL)",
+                               (question_id, student_id, answer_text))
+
+            cursor.execute("INSERT INTO Attended (student_id, exam_id, earned_total) VALUES (?, ?, NULL)",
+                           (student_id, exam_id))
             conn.commit()
-        
-            return render_template('message.html', message="Exam submitted successfully!")
+
+            # Start background evaluation thread
+            threading.Thread(target=evaluate_in_background, args=(student_id, exam_id)).start()
+
+            return render_template('message.html', message="Exam submitted! Evaluation is in progress. Check back later for results.")
+
     cursor.execute("SELECT * FROM Question WHERE exam_id = ?", (exam_id,))
     questions = cursor.fetchall()
-    
     return render_template('write_exam.html', questions=questions)
 
 
