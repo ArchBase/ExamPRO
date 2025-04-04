@@ -98,12 +98,17 @@ def review_answers(exam_id, student_id):
                     cursor.execute("UPDATE Answer SET earned_marks = ?, feedback = ? WHERE id = ?", 
                                    (new_marks, new_feedback, answer_id))
 
-            elif action == 'retry_ai':
-                answer_id = int(request.form.get('answer_id'))
+            elif request.form.get('retry_ai'):  # Retry AI button was pressed
+                answer_id = int(request.form['retry_ai'])  # Get answer ID from button value
+                print("\nRETRYING AI EVALUATION FOR ANSWER ID:", answer_id)
                 threading.Thread(target=re_evaluate_single_answer, args=(answer_id,)).start()
-                
-                return render_template('message.html', message="AI re-valuation for selected answer is under progress. Check back later for results.")
 
+                return render_template(
+                    'message.html',
+                    message="AI re-valuation for selected answer is under progress. Check back later for results.",
+                    link_text="Continue reviewing...",
+                    link_url=f"/review_answers/{exam_id}/{student_id}"
+                )
 
             conn.commit()
 
@@ -125,10 +130,12 @@ def evaluate_answer(question, answer, answer_key, max_score):
 
     for _ in range(3):  # Try 3 times if AI doesn't return a valid number
         # Step 1: Get detailed reasoning from DeepSeek
-        deepseek_response = ollama.chat(model="deepseek-r1:8b", messages=[{"role": "user", "content": reasoning_prompt}])
+        deepseek_response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": reasoning_prompt}])
         deepseek_text = deepseek_response['message']['content'].strip()
 
         print(f"\n****************************************************************\nDeepSeek Response: {deepseek_text}")
+
+        deepseek_text = re.sub(r'<think>.*?</think>', '', deepseek_text, flags=re.DOTALL).strip()
 
         # Step 2: Extract marks using LLaMA
         extract_prompt = extract_prompt_template.format(deepseek_response=deepseek_text)
@@ -305,6 +312,12 @@ def write_exam(exam_id):
         cursor.execute("SELECT id FROM Attended WHERE student_id = ? AND exam_id = ?", (student_id, exam_id))
         attempted = cursor.fetchone()
         if attempted:
+            return render_template(
+                    'message.html',
+                    message="You have already attempted this exam.",
+                    link_text="Back to dashboard",
+                    link_url=f"/dashboard_student"
+            )
             return render_template('message.html', message="You have already attempted this exam.")
 
         if request.method == 'POST':
@@ -323,6 +336,12 @@ def write_exam(exam_id):
             # Start background evaluation thread
             threading.Thread(target=evaluate_in_background, args=(student_id, exam_id)).start()
 
+            return render_template(
+                    'message.html',
+                    message="Exam submitted! Evaluation is in progress. Check back later for results.",
+                    link_text="Back to dashboard",
+                    link_url=f"/dashboard_student"
+            )
             return render_template('message.html', message="Exam submitted! Evaluation is in progress. Check back later for results.")
 
     cursor.execute("SELECT * FROM Question WHERE exam_id = ?", (exam_id,))
