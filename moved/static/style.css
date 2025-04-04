@@ -109,3 +109,116 @@ td {
 .container, form, table {
     animation: fadeIn 0.5s ease-in-out;
 }
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    background-color: #eaebed;
+    color: #006989;
+}
+
+/* Navbar */
+.navbar {
+    width: 100%; /* Make sure it spans full width */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #006989; /* Updated to your theme color */
+    padding: 15px 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: fixed; /* Changed from sticky to fixed for always on top */
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    height: 32px;
+    width: 32px;
+    margin-right: 10px;
+}
+
+.site-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white; /* White text */
+}
+.nav-links a {
+    margin-left: 20px;
+    text-decoration: none;
+    color: white; /* White text */
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: #a3bac3;
+}
+/* Main Content */
+.home-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 80px);
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.home-content h1 {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.home-content p {
+    font-size: 1.1rem;
+    color: #333;
+    max-width: 600px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .nav-links a {
+        margin-left: 10px;
+        font-size: 0.95rem;
+    }
+
+    .site-title {
+        font-size: 1.3rem;
+    }
+
+    .home-content h1 {
+        font-size: 2rem;
+    }
+}
+html, body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+body {
+    flex: 1;
+}
+
+.footer {
+    margin-top: auto;
+}
+

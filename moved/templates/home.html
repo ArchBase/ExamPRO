@@ -1,16 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <title>ExamPro - Home</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Home</h1>
-    <a href="/signup_student">Student Signup</a><br>
-    <a href="/signup_teacher">Teacher Signup</a><br>
-    <a href="/login_student">Student Login</a><br>
-    <a href="/login_teacher">Teacher Login</a>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo-area">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo">
+            <span class="site-title">ExamPro</span>
+        </div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+            <a href="/signup_student">Student Signup</a>
+            <a href="/login_student">Student Login</a>
+            <a href="/signup_teacher">Teacher Signup</a>
+            <a href="/login_teacher">Teacher Login</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="home-content">
+        <h1>Welcome to ExamPro</h1>
+        <p>A secure and simple platform to conduct and attend descriptive exams online.</p>
+    </main>
+    <footer class="footer">
+        <p>&copy; 2025 ExamPro. All rights reserved.</p>
+    </footer>
+    
 </body>
 </html>
