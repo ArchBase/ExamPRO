@@ -31,28 +31,38 @@ def re_evaluate_single_answer(answer_id):
 
 
 def evaluate_in_background(student_id, exam_id):
+    total_earned = 0
+
+    # Fetch all questions before processing to minimize DB time
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
-
         cursor.execute("SELECT id, question_text, total_marks, answer_key FROM Question WHERE exam_id = ?", (exam_id,))
         questions = cursor.fetchall()
 
-        total_earned = 0
-        for question_id, question_text, max_marks, answer_key in questions:
+    for question_id, question_text, max_marks, answer_key in questions:
+        # Fetch answer text for the question
+        with sqlite3.connect('database.db') as conn:
+            cursor = conn.cursor()
             cursor.execute("SELECT answer_text FROM Answer WHERE student_id = ? AND question_id = ?", (student_id, question_id))
             result = cursor.fetchone()
-            if result:
-                answer_text = result[0]
 
-                # AI-based evaluation
-                earned_marks, feedback = evaluate_answer(question_text, answer_text, answer_key, max_marks)
-                total_earned += earned_marks if earned_marks != -1 else 0
+        if result:
+            answer_text = result[0]
 
-                # Update the Answer row with marks and feedback
+            # AI-based evaluation (outside DB operation)
+            earned_marks, feedback = evaluate_answer(question_text, answer_text, answer_key, max_marks)
+            total_earned += earned_marks if earned_marks != -1 else 0
+
+            # Update the Answer row immediately after evaluation
+            with sqlite3.connect('database.db') as conn:
+                cursor = conn.cursor()
                 cursor.execute("UPDATE Answer SET earned_marks = ?, feedback = ? WHERE student_id = ? AND question_id = ?",
                                (earned_marks, feedback, student_id, question_id))
+                conn.commit()  # ✅ Commit after each update
 
-        # Update the Attended row
+    # Finally, update total earned marks in the Attended table
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
         cursor.execute("UPDATE Attended SET earned_total = ? WHERE student_id = ? AND exam_id = ?",
                        (total_earned, student_id, exam_id))
         conn.commit()
@@ -130,7 +140,7 @@ def evaluate_answer(question, answer, answer_key, max_score):
 
     for _ in range(3):  # Try 3 times if AI doesn't return a valid number
         # Step 1: Get detailed reasoning from DeepSeek
-        deepseek_response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": reasoning_prompt}])
+        deepseek_response = ollama.chat(model="deepseek-r1:8b", messages=[{"role": "user", "content": reasoning_prompt}])
         deepseek_text = deepseek_response['message']['content'].strip()
 
         print(f"\n****************************************************************\nDeepSeek Response: {deepseek_text}")
