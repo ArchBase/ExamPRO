@@ -7,6 +7,29 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 import threading
 
+
+def re_evaluate_single_answer(answer_id):
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT Question.question_text, Answer.answer_text, Question.answer_key, Question.total_marks
+            FROM Answer
+            JOIN Question ON Answer.question_id = Question.id
+            WHERE Answer.id = ?
+        """, (answer_id,))
+        data = cursor.fetchone()
+        
+        if data:
+            question_text, answer_text, answer_key, max_marks = data
+            new_marks, new_feedback = evaluate_answer(question_text, answer_text, answer_key, max_marks)
+
+            cursor.execute("UPDATE Answer SET earned_marks = ?, feedback = ? WHERE id = ?", 
+                           (new_marks, new_feedback, answer_id))
+            conn.commit()
+
+
+
 def evaluate_in_background(student_id, exam_id):
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
@@ -75,15 +98,12 @@ def review_answers(exam_id, student_id):
                     cursor.execute("UPDATE Answer SET earned_marks = ?, feedback = ? WHERE id = ?", 
                                    (new_marks, new_feedback, answer_id))
 
-            elif action == 'retry_ai':  # Retry AI evaluation for a specific answer
+            elif action == 'retry_ai':
                 answer_id = int(request.form.get('answer_id'))
-                cursor.execute("SELECT Question.question_text, Answer.answer_text, Question.answer_key, Question.total_marks FROM Answer JOIN Question ON Answer.question_id = Question.id WHERE Answer.id = ?", (answer_id,))
-                question_text, answer_text, answer_key, max_marks = cursor.fetchone()
+                threading.Thread(target=re_evaluate_single_answer, args=(answer_id,)).start()
+                
+                return render_template('message.html', message="AI re-valuation for selected answer is under progress. Check back later for results.")
 
-                new_marks, new_feedback = evaluate_answer(question_text, answer_text, answer_key, max_marks)
-
-                cursor.execute("UPDATE Answer SET earned_marks = ?, feedback = ? WHERE id = ?", 
-                               (new_marks, new_feedback, answer_id))
 
             conn.commit()
 
