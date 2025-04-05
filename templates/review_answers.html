@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Answers</title>
+</head>
+<body>
+    <h1>Review Answers</h1>
+    <p><strong>Exam:</strong> {{ exam_title }}</p>
+    <p><strong>Student:</strong> {{ student_name }}</p>
+
+    <form action="{{ url_for('review_answers', exam_id=exam_id, student_id=student_id) }}" method="POST">
+        <table border="1">
+            <tr>
+                <th>Question</th>
+                <th>Student Answer</th>
+                <th>AI Marks</th>
+                <th>Max Marks</th>
+                <th>Teacher Marks</th>
+                <th>Feedback</th>
+                <th>Actions</th>
+            </tr>
+            {% for answer in answers %}
+            <tr>
+                <td>{{ answer[1] }}</td> <!-- Question Text -->
+                <td>{{ answer[2] }}</td> <!-- Student's Answer -->
+                <td>{{ answer[3] }}</td> <!-- AI Assigned Marks -->
+                <td>{{ answer[4] }}</td> <!-- Max Marks -->
+                
+                <!-- Editable Teacher Marks -->
+                <td>
+                    <input type="number" name="marks_{{ answer[6] }}" value="{{ answer[3] }}" step="0.01" min="0" max="{{ answer[4] }}">
+                </td>
+
+                <!-- Editable Feedback -->
+                <td>
+                    <textarea name="feedback_{{ answer[6] }}" rows="2" cols="30">{{ answer[5] }}</textarea>
+                </td>
+
+                <td>
+                    <!-- Retry AI Evaluation Button -->
+                    <button type="submit" name="retry_ai" value="{{ answer[6] }}">Retry AI Evaluation</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        
+        <br>
+        <button type="submit" name="action" value="update_marks">Save Marks & Feedback</button>
+    </form>
+</body>
+</html>

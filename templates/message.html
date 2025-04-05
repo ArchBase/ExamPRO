@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Message</title>
+</head>
+<body>
+    <h1>{{ message }}</h1>
+    <a href="{{ link_url }}"><button>{{ link_text }}</button></a>
+</body>
+</html>

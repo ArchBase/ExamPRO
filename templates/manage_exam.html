@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Manage Exam</title>
+    <script>
+        function updateStudentLists() {
+            fetch(`/get_exam_status/{{ exam_id }}`)
+                .then(response => response.json())
+                .then(data => {
+                    const joinedList = document.getElementById('joined-list');
+                    const waitingList = document.getElementById('waiting-list');
+
+                    joinedList.innerHTML = '';
+                    waitingList.innerHTML = '';
+
+                    document.getElementById('joined-count').textContent = data.students.length;
+                    document.getElementById('waiting-count').textContent = data.waiting_students.length;
+
+                    data.students.forEach(student => {
+                        const li = document.createElement('li');
+                        li.textContent = student;
+                        joinedList.appendChild(li);
+                    });
+
+                    data.waiting_students.forEach(student => {
+                        const li = document.createElement('li');
+                        li.textContent = student;
+                        waitingList.appendChild(li);
+                    });
+                });
+        }
+
+        // Poll every 3 seconds
+        setInterval(updateStudentLists, 3000);
+
+        window.onload = updateStudentLists;
+    </script>
+</head>
+<body>
+    <h1>Manage Exam - ID {{ exam_id }}</h1>
+
+    <h2>Students Joined: <span id="joined-count">0</span></h2>
+    <ul id="joined-list"></ul>
+
+    <h2>Students Waiting: <span id="waiting-count">0</span></h2>
+    <ul id="waiting-list"></ul>
+
+    <form method="POST">
+        <button type="submit">Start Exam</button>
+    </form>
+</body>
+</html>

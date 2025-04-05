@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Result - ExamPro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Reset and Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            padding: 40px 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+            animation: fadeIn 0.8s ease;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #0077b6;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #023e8a;
+            margin: 30px 0 15px;
+        }
+
+        .total-marks {
+            font-size: 20px;
+            text-align: center;
+            color: #333;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+            height: 25px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #0077b6;
+            color: white;
+            text-align: center;
+            line-height: 25px;
+            transition: width 1s ease-in-out;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th, table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: left;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        table th {
+            background-color: #0077b6;
+            color: white;
+        }
+
+        table tr:hover {
+            background-color: #f1f9ff;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 24px;
+            background-color: #0077b6;
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #005f87;
+            transform: scale(1.03);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            table thead {
+                display: none;
+            }
+
+            table tr {
+                margin-bottom: 15px;
+                background: #f9f9f9;
+                border-radius: 8px;
+                padding: 10px;
+            }
+
+            table td {
+                text-align: right;
+                position: relative;
+                padding-left: 50%;
+                font-size: 15px;
+            }
+
+            table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 15px;
+                width: 45%;
+                font-weight: bold;
+                text-align: left;
+                color: #333;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Exam Result</h1>
+        <p class="total-marks"><strong>Your Total Marks:</strong> {{ result[0] }}</p>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar">{{ result[0] }}%</div>
+        </div>
+
+        <h2>Detailed Breakdown</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Question</th>
+                    <th>Your Answer</th>
+                    <th>Earned Marks</th>
+                    <th>Max Marks</th>
+                    <th>AI Feedback</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for answer in answers %}
+                <tr>
+                    <td data-label="Question">{{ answer[0] }}</td>
+                    <td data-label="Your Answer">{{ answer[1] }}</td>
+                    <td data-label="Earned Marks">{{ answer[2] }}</td>
+                    <td data-label="Max Marks">{{ answer[3] }}</td>
+                    <td data-label="AI Feedback">{{ answer[4] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="text-align: center;">
+            <a href="/dashboard_student" class="back-button">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        // Animate Progress Bar
+        window.addEventListener("DOMContentLoaded", () => {
+            const progress = document.getElementById("progressBar");
+            const value = parseFloat(progress.textContent);
+            progress.style.width = value + "%";
+        });
+    </script>
+</body>
+</html>

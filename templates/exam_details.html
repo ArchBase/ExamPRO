@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Details</title>
+</head>
+<body>
+    <h1>Exam Details</h1>
+    <p>Title: {{ exam[2] }}</p>
+    <p>Total Marks: {{ exam[3] }}</p>
+
+    
+    <h2>Students</h2>
+    <ul>
+        {% for student in students %}
+            <li>
+                {{ student[0] }} (Reg: {{ student[1] }}) — {{ student[2] }} marks
+                <a href="{{ url_for('review_answers', exam_id=exam[0], student_id=student[3]) }}">
+                    <button>Review Answers</button>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <form method="POST" action="{{ url_for('generate_plagiarism', exam_id=exam[0]) }}">
+        <button type="submit">Generate Plagiarism Report</button>
+    </form>
+    
+    
+    {% if fatal_cases %}
+    <h2>⚠️ Fatal Plagiarism Cases</h2>
+    <ul>
+    {% for case in fatal_cases %}
+        <li>
+            {{ case.student1.username }} (Reg: {{ case.student1.reg_no }}) 
+            and 
+            {{ case.student2.username }} (Reg: {{ case.student2.reg_no }}) — 
+            Score: {{ case.similarity_score }}
+            <a href="{{ url_for('view_plagiarism_detail', report_id=case.id) }}">
+                <button>View Details</button>
+            </a>
+        </li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+</body>
+</html>

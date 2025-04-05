@@ -1,0 +1,332 @@
+/* === Reset & Base Styles === */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(to right, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%),
+                url("/static/images/bg.jpg") no-repeat right center fixed;
+    background-size: cover;
+    color: #006989;
+}
+
+/* === Navbar === */
+.navbar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #006989;
+    padding: 15px 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    height: 32px;
+    width: 32px;
+    margin-right: 10px;
+}
+
+.site-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+}
+
+.nav-links a {
+    margin-left: 20px;
+    text-decoration: none;
+    color: white;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: #a3bac3;
+}
+
+/* === Hero Section === */
+.hero-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 120px 60px 60px;
+    width: 100%;
+    flex: 1;
+}
+
+.hero-text {
+    flex: 1;
+    padding-right: 30px;
+    min-width: 320px;
+}
+
+.hero-text h1 {
+    font-size: 3rem;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    color: #006989;
+}
+
+.hero-text .highlight {
+    color: #003f5c;
+}
+
+.hero-text p {
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 30px;
+    max-width: 600px;
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #006989;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #004b5c;
+}
+
+.btn-secondary {
+    border: 2px solid #006989;
+    color: #006989;
+    background-color: transparent;
+}
+
+.btn-secondary:hover {
+    background-color: #006989;
+    color: white;
+}
+
+.hero-image {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.hero-image img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));
+}
+
+/* === Modal Styles === */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 30px 40px;
+    border-radius: 10px;
+    width: 300px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+.modal-content h2 {
+    margin-bottom: 20px;
+    color: #006989;
+}
+
+.modal-buttons button {
+    margin: 10px;
+    padding: 10px 20px;
+    background-color: #006989;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.modal-buttons button:hover {
+    background-color: #004f60;
+}
+
+.close {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 1.5rem;
+    color: #333;
+    cursor: pointer;
+}
+
+/* === Footer === */
+.footer {
+    margin-top: auto;
+    padding: 20px;
+    text-align: center;
+    background-color: #f8f8f8;
+    font-size: 0.9rem;
+    color: #006989;
+    border-top: 1px solid #ddd;
+}
+
+/* === Login & Signup Page Centering === */
+.login-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.login-card {
+    background-color: white;
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-card h1 {
+    margin-bottom: 30px;
+    color: #006989;
+    font-size: 1.8rem;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    text-align: left;
+}
+
+label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+input[type="email"],
+input[type="password"] {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: #006989;
+    outline: none;
+}
+
+button[type="submit"] {
+    margin-top: 10px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: #006989;
+    color: white;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #004c5e;
+}
+
+.signup-prompt {
+    margin-top: 20px;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.signup-prompt a {
+    color: #006989;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.signup-prompt a:hover {
+    text-decoration: underline;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+    .hero-section {
+        flex-direction: column;
+        padding: 100px 30px 60px;
+        text-align: center;
+    }
+
+    .hero-image {
+        margin-top: 30px;
+        justify-content: center;
+    }
+
+    .cta-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .nav-links a {
+        margin-left: 10px;
+        font-size: 0.95rem;
+    }
+
+    .login-container {
+        padding: 20px;
+    }
+
+    .login-card {
+        padding: 30px 20px;
+    }
+}
