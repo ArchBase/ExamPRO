@@ -636,10 +636,26 @@ def manage_exam(exam_id):
 
     return render_template('manage_exam.html', exam_id=exam_id, students=students, waiting_students=waiting_students)
 
+import threading
+
 @app.route('/generate_plagiarism/<int:exam_id>', methods=['POST'])
 def generate_plagiarism(exam_id):
-    generate_plagiarism_report(exam_id)
-    return redirect(url_for('exam_details', exam_id=exam_id))
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+        # Delete previous plagiarism data for this exam
+        cursor.execute("DELETE FROM PlagiarismReport WHERE exam_id = ?", (exam_id,))
+
+    # Run the report generation in a background thread
+    threading.Thread(target=generate_plagiarism_report, args=(exam_id,)).start()
+
+    # Immediately show message to user
+    return render_template(
+        'message.html',
+        message="Our AI is working on your exam. Plagiarism report will be available soon. Please check back later.",
+        link_text="Back to Exam Details",
+        link_url=f"/exam_details/{exam_id}"
+    )
+
 
 @app.route('/plagiarism_detail/<int:report_id>')
 def view_plagiarism_detail(report_id):
@@ -668,6 +684,30 @@ def view_plagiarism_detail(report_id):
         detail['answer2'] = cursor.fetchone()[0]
 
     return render_template("plagiarism_detail.html", detail=detail)
+
+
+@app.route('/get_exam_status/<int:exam_id>')
+def get_exam_status(exam_id):
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+        
+        cursor.execute("""
+            SELECT Student.username 
+            FROM Attended 
+            JOIN Student ON Attended.student_id = Student.id 
+            WHERE Attended.exam_id = ?
+        """, (exam_id,))
+        students = [row[0] for row in cursor.fetchall()]
+
+        cursor.execute("""
+            SELECT Student.username 
+            FROM WaitingRoom 
+            JOIN Student ON WaitingRoom.student_id = Student.id 
+            WHERE WaitingRoom.exam_id = ?
+        """, (exam_id,))
+        waiting_students = [row[0] for row in cursor.fetchall()]
+    
+    return jsonify({"students": students, "waiting_students": waiting_students})
 
 
 
