@@ -1,18 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Student Login</title>
 </head>
 <body>
-    <h1>Student Login</h1>
-    <form method="POST">
-        Email: <input type="email" name="email"><br>
-        Password: <input type="password" name="password"><br>
-        <button type="submit">Login</button>
-    </form>
+    <div class="login-container">
+        <div class="login-card">
+            <h1>Student Login</h1>
+            <form method="POST">
+                <label for="email">Email:</label>
+                <input type="email" name="email" required>
+
+                <label for="password">Password:</label>
+                <input type="password" name="password" required>
+
+                <button type="submit">Login</button>
+            </form>
+
+            <!-- 👇 Sign Up Link -->
+            <p class="signup-prompt">
+                Don't have an account? 
+                <a href="{{ url_for('signup_student') }}">Sign up</a>
+            </p>
+        </div>
+    </div>
 </body>
 </html>

@@ -10,27 +10,76 @@
     <!-- Navbar -->
     <nav class="navbar">
         <div class="logo-area">
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="logo">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
             <span class="site-title">ExamPro</span>
         </div>
         <div class="nav-links">
             <a href="/">Home</a>
             <a href="/about">About</a>
-            <a href="/signup_student">Student Signup</a>
-            <a href="/login_student">Student Login</a>
-            <a href="/signup_teacher">Teacher Signup</a>
-            <a href="/login_teacher">Teacher Login</a>
+            <a href="#" onclick="openModal('signup')">Signup</a>
+            <a href="#" onclick="openModal('login')">Login</a>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="home-content">
-        <h1>Welcome to ExamPro</h1>
-        <p>A secure and simple platform to conduct and attend descriptive exams online.</p>
+    <!-- Hero Section -->
+    <main class="hero-section">
+        <div class="hero-text">
+            <h1>Smarter Grading with<br><span class="highlight">AI-Powered Evaluation</span></h1>
+            <p>
+                ExamPro uses AI to instantly evaluate descriptive answers, saving time and ensuring fair, accurate results.
+            </p>
+            <div class="cta-buttons">
+                <a href="#" onclick="openModal('signup')" class="btn-primary">Get Started</a>
+                <a href="/about" class="btn-secondary">Learn More</a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="{{ url_for('static', filename='images/hero.png') }}" alt="Illustration" />
+        </div>
     </main>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modal-title">Choose Role</h2>
+            <div class="modal-buttons">
+                <button onclick="goTo('student')">Student</button>
+                <button onclick="goTo('teacher')">Teacher</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
     <footer class="footer">
         <p>&copy; 2025 ExamPro. All rights reserved.</p>
     </footer>
-    
+
+    <!-- Scripts -->
+    <script>
+        let actionType = '';
+
+        function openModal(type) {
+            actionType = type;
+            document.getElementById('modal-title').innerText = type === 'login' ? 'Login as:' : 'Signup as:';
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function goTo(role) {
+            const path = `/${actionType}_${role}`;
+            window.location.href = path;
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+    </script>
 </body>
 </html>
