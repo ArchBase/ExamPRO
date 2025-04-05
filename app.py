@@ -140,7 +140,7 @@ def evaluate_answer(question, answer, answer_key, max_score):
 
     for _ in range(3):  # Try 3 times if AI doesn't return a valid number
         # Step 1: Get detailed reasoning from DeepSeek
-        deepseek_response = ollama.chat(model="deepseek-r1:8b", messages=[{"role": "user", "content": reasoning_prompt}])
+        deepseek_response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": reasoning_prompt}])
         deepseek_text = deepseek_response['message']['content'].strip()
 
         print(f"\n****************************************************************\nDeepSeek Response: {deepseek_text}")
@@ -481,15 +481,33 @@ def manage_exam(exam_id):
     if 'teacher_id' not in session:
         return redirect('/login_teacher')
 
+    def reset_exam_flag_later(exam_id):
+        # This function runs in a separate thread after 10 seconds
+        with sqlite3.connect('database.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE Exam SET is_started = 0 WHERE id = ?", (exam_id,))
+            conn.commit()
+
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
 
         if request.method == 'POST':
+            # Start exam temporarily
             cursor.execute("UPDATE Exam SET is_started = 1 WHERE id = ?", (exam_id,))
             conn.commit()
+
+            # Start a background thread to reset is_started after 10 seconds
+            threading.Timer(10.0, reset_exam_flag_later, args=(exam_id,)).start()
+
             return redirect('/dashboard_teacher')
 
-        cursor.execute("SELECT Student.username FROM Attended JOIN Student ON Attended.student_id = Student.id WHERE Attended.exam_id = ?", (exam_id,))
+        # Show students who joined
+        cursor.execute("""
+            SELECT Student.username 
+            FROM Attended 
+            JOIN Student ON Attended.student_id = Student.id 
+            WHERE Attended.exam_id = ?
+        """, (exam_id,))
         students = cursor.fetchall()
 
     return render_template('manage_exam.html', exam_id=exam_id, students=students)
