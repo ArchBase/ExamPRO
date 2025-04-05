@@ -3,18 +3,49 @@
 <head>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Write Exam</title>
+    <style>
+        #timer {
+            font-weight: bold;
+            font-size: 18px;
+            color: red;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>Write Exam</h1>
+
+    <!-- Timer -->
+    <div id="timer">Time Remaining: Loading...</div>
+
+    <!-- Exam Form -->
     <form method="POST">
         {% for question in questions %}
             <p>{{ question[2] }}</p>
-            <textarea name="answer_{{ question[0] }}"></textarea><br>
+            <textarea name="answer_{{ question[0] }}" rows="4" cols="50"></textarea><br><br>
         {% endfor %}
         <button type="submit">Submit</button>
     </form>
+
+    <!-- Auto-submit Timer Script -->
+    <script>
+        let remainingTime = {{ duration }} * 60; // convert minutes to seconds
+
+        const countdown = setInterval(() => {
+            remainingTime--;
+
+            if (remainingTime <= 0) {
+                clearInterval(countdown);
+                alert("Time is up! Submitting your exam automatically.");
+                document.forms[0].submit();
+            }
+
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = (remainingTime % 60).toString().padStart(2, '0');
+            document.getElementById("timer").innerText = `Time Remaining: ${minutes}:${seconds}`;
+        }, 1000);
+    </script>
 </body>
 </html>

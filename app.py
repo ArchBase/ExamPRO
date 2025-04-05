@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, jsonify
 import sqlite3
 import re
 import ollama
@@ -193,10 +193,14 @@ def init_db():
                             password TEXT)''')
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS Exam (
-                            id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            teacher_id INTEGER,
-                            title TEXT,
-                            total_marks INTEGER)''')
+                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    teacher_id INTEGER,
+                                    title TEXT,
+                                    total_marks INTEGER,
+                                    is_started INTEGER DEFAULT 0,
+                                    duration INTEGER  -- in minutes maybe
+                                )''')
+
 
         cursor.execute('''CREATE TABLE IF NOT EXISTS Question (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -218,6 +222,10 @@ def init_db():
                             student_id INTEGER,
                             exam_id INTEGER,
                             earned_total REAL)''')  # ✅ Changed from INTEGER to REAL
+
+        # In init_db()
+        #cursor.execute('''ALTER TABLE Exam ADD COLUMN duration INTEGER''')  # Duration in minutes
+        #cursor.execute('''ALTER TABLE Exam ADD COLUMN is_started INTEGER DEFAULT 0''')  # 0: Not started, 1: Started
 
         conn.commit()
 
@@ -290,7 +298,17 @@ def dashboard_student():
         return redirect('/login_student')
     if request.method == 'POST':
         exam_code = request.form['exam_code']
-        return redirect(f'/write_exam/{exam_code}')
+        with sqlite3.connect('database.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT is_started FROM Exam WHERE id = ?", (exam_code,))
+            result = cursor.fetchone()
+            if result:
+                is_started = result[0]
+                if is_started == 1:
+                    return redirect(f'/write_exam/{exam_code}')
+                else:
+                    return render_template('waiting_room.html', exam_id=exam_code)
+
     student_id = session['student_id']
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
@@ -319,17 +337,23 @@ def write_exam(exam_id):
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
 
+        # Check if already attended
         cursor.execute("SELECT id FROM Attended WHERE student_id = ? AND exam_id = ?", (student_id, exam_id))
         attempted = cursor.fetchone()
         if attempted:
             return render_template(
-                    'message.html',
-                    message="You have already attempted this exam.",
-                    link_text="Back to dashboard",
-                    link_url=f"/dashboard_student"
+                'message.html',
+                message="You have already attempted this exam.",
+                link_text="Back to dashboard",
+                link_url=f"/dashboard_student"
             )
-            return render_template('message.html', message="You have already attempted this exam.")
 
+        # ✅ Get exam duration
+        cursor.execute("SELECT duration FROM Exam WHERE id = ?", (exam_id,))
+        result = cursor.fetchone()
+        duration = result[0] if result else 0  # in minutes
+
+        # On submit
         if request.method == 'POST':
             cursor.execute("SELECT id FROM Question WHERE exam_id = ?", (exam_id,))
             questions = cursor.fetchall()
@@ -343,20 +367,21 @@ def write_exam(exam_id):
                            (student_id, exam_id))
             conn.commit()
 
-            # Start background evaluation thread
+            # Evaluate in background
             threading.Thread(target=evaluate_in_background, args=(student_id, exam_id)).start()
 
             return render_template(
-                    'message.html',
-                    message="Exam submitted! Evaluation is in progress. Check back later for results.",
-                    link_text="Back to dashboard",
-                    link_url=f"/dashboard_student"
+                'message.html',
+                message="Exam submitted! Evaluation is in progress. Check back later for results.",
+                link_text="Back to dashboard",
+                link_url=f"/dashboard_student"
             )
-            return render_template('message.html', message="Exam submitted! Evaluation is in progress. Check back later for results.")
 
-    cursor.execute("SELECT * FROM Question WHERE exam_id = ?", (exam_id,))
-    questions = cursor.fetchall()
-    return render_template('write_exam.html', questions=questions)
+        # Fetch exam questions
+        cursor.execute("SELECT * FROM Question WHERE exam_id = ?", (exam_id,))
+        questions = cursor.fetchall()
+        return render_template('write_exam.html', questions=questions, duration=duration)
+
 
 
 @app.route('/view_result/<int:exam_id>')
@@ -394,14 +419,14 @@ def create_exam():
         questions = request.form.getlist('question_text[]')
         question_marks = request.form.getlist('question_marks[]')
         answer_keys = request.form.getlist('answer_key[]')  # ✅ Capture answer keys
-
+        duration = int(request.form['duration'])
         # Calculate total marks dynamically
         total_marks = sum(map(int, question_marks))
 
         with sqlite3.connect('database.db') as conn:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO Exam (teacher_id, title, total_marks) VALUES (?, ?, ?)",
-                           (session['teacher_id'], title, total_marks))
+            cursor.execute("INSERT INTO Exam (teacher_id, title, total_marks, duration) VALUES (?, ?, ?, ?)",
+               (session['teacher_id'], title, total_marks, duration))
             exam_id = cursor.lastrowid
 
             for question_text, marks, answer_key in zip(questions, question_marks, answer_keys):
@@ -438,6 +463,38 @@ def exam_details(exam_id):
         students = cursor.fetchall()  # (username, earned_total, student_id)
 
     return render_template('exam_details.html', exam=exam, students=students)
+
+@app.route('/check_exam_started/<int:exam_id>')
+def check_exam_started(exam_id):
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT is_started FROM Exam WHERE id = ?", (exam_id,))
+        result = cursor.fetchone()
+        if result and result[0] == 1:
+            return jsonify({"started": True})
+    return jsonify({"started": False})
+
+
+
+@app.route('/manage_exam/<int:exam_id>', methods=['GET', 'POST'])
+def manage_exam(exam_id):
+    if 'teacher_id' not in session:
+        return redirect('/login_teacher')
+
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+
+        if request.method == 'POST':
+            cursor.execute("UPDATE Exam SET is_started = 1 WHERE id = ?", (exam_id,))
+            conn.commit()
+            return redirect('/dashboard_teacher')
+
+        cursor.execute("SELECT Student.username FROM Attended JOIN Student ON Attended.student_id = Student.id WHERE Attended.exam_id = ?", (exam_id,))
+        students = cursor.fetchall()
+
+    return render_template('manage_exam.html', exam_id=exam_id, students=students)
+
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)

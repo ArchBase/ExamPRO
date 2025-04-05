@@ -13,9 +13,10 @@
     <h2>Created Exams</h2>
     <ul>
         {% for exam in exams %}
-            <li>EXAM CODE: {{ exam[0] }} - {{ exam[2] }} 
-                - <a href="/exam_details/{{ exam[0] }}">View Statistics</a>
-            </li>
+        <li>EXAM CODE: {{ exam[0] }} - {{ exam[2] }} 
+            - <a href="/exam_details/{{ exam[0] }}">View Statistics</a>
+            - <a href="/manage_exam/{{ exam[0] }}">Manage</a>
+        </li>
         {% endfor %}
     </ul>
 </body>

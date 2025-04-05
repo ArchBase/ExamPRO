@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Exam</title>
+</head>
+<body>
+    <h1>Manage Exam - ID {{ exam_id }}</h1>
+    <h2>Students Joined: {{ students|length }}</h2>
+    <ul>
+        {% for student in students %}
+            <li>{{ student[0] }}</li>
+        {% endfor %}
+    </ul>
+    <form method="POST">
+        <button type="submit">Start Exam</button>
+    </form>
+</body>
+</html>

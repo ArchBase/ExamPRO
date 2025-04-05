@@ -40,6 +40,8 @@
     <h1>Create Exam</h1>
     <form method="POST">
         Title: <input type="text" name="title" required><br>
+        Duration (in minutes): <input type="number" name="duration" min="1" required><br>
+
         Total Marks: <input type="number" id="total_marks" name="total_marks" readonly><br>
         <h2>Questions</h2>
         <div id="questions">
