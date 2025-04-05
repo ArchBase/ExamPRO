@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, jsonify
+from flask import Flask, render_template, request, redirect, session, jsonify, url_for
 import sqlite3
 import re
 import ollama
@@ -127,6 +127,79 @@ def review_answers(exam_id, student_id):
     return render_template('review_answers.html', exam_id=exam_id, student_id=student_id, exam_title=exam_title, student_name=student_name, answers=answers)
 
 
+def generate_plagiarism_report(exam_id):
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+
+        # Get all questions of the exam
+        cursor.execute("SELECT id, question_text, answer_key FROM Question WHERE exam_id=?", (exam_id,))
+        questions = cursor.fetchall()
+
+        for qid, qtext, answer_key in questions:
+            # Get all answers to this question
+            cursor.execute("SELECT student_id, answer_text FROM Answer WHERE question_id=?", (qid,))
+            answers = cursor.fetchall()
+
+            for i in range(len(answers)):
+                sid1, ans1 = answers[i]
+                for j in range(i + 1, len(answers)):
+                    sid2, ans2 = answers[j]
+                    if sid1 == sid2:
+                        continue
+
+                    # Prompt for reasoning
+                    reasoning_prompt = (
+                        f"Compare the following two answers to the question:\n\n"
+                        f"Q: {qtext}\n\n"
+                        f"Answer 1: {ans1}\n"
+                        f"Answer 2: {ans2}\n\n"
+                        f"Based on the question and expected answer '{answer_key}', "
+                        f"how similar are these two answers? Give a similarity score out of 100 "
+                        f"(100 meaning identical answers, 0 meaning completely different). "
+                        f"Then explain your reasoning."
+                    )
+
+                    extract_prompt_template = (
+                        "Here is a detailed analysis of plagiarism between two answers:\n\n"
+                        "{deepseek_response}\n\n"
+                        "From the above reasoning, extract only the final similarity score (out of 100). "
+                        "Do not include any explanations, just return the number."
+                    )
+
+                    for _ in range(3):  # Retry if needed
+                        # Step 1: Get reasoning
+                        reasoning_response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": reasoning_prompt}])
+                        reasoning_text = reasoning_response['message']['content'].strip()
+
+                        print(f"\n****************************************************************\nPlagiarism Reasoning:\n{reasoning_text}")
+
+                        reasoning_text = re.sub(r'<think>.*?</think>', '', reasoning_text, flags=re.DOTALL).strip()
+
+                        # Step 2: Extract score
+                        extract_prompt = extract_prompt_template.format(deepseek_response=reasoning_text)
+                        extract_response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": extract_prompt}])
+                        extract_text = extract_response['message']['content'].strip()
+
+                        print(f"\n****************************************************************\nExtracted Similarity Score:\n{extract_text}")
+
+                        match = re.search(r'\d+(\.\d+)?', extract_text)
+                        if match:
+                            score = float(match.group())
+                            score = round(score, 2)
+
+                            if 0 <= score <= 100:
+                                #score = 100
+                                # Save to DB
+                                cursor.execute('''INSERT INTO PlagiarismReport 
+                                                (exam_id, question_id, student1_id, student2_id, similarity_score, reasoning) 
+                                                VALUES (?, ?, ?, ?, ?, ?)''',
+                                               (exam_id, qid, sid1, sid2, score, reasoning_text))
+                                break  # break retry loop if successful
+
+        conn.commit()
+
+
+
 def evaluate_answer(question, answer, answer_key, max_score):
     reasoning_prompt = (f"'{answer}' is an answer written by a student for the question '{question}'. "
                         f"The marking condition is '{answer_key}'. "
@@ -222,6 +295,15 @@ def init_db():
                             student_id INTEGER,
                             exam_id INTEGER,
                             earned_total REAL)''')  # ✅ Changed from INTEGER to REAL
+        
+        cursor.execute('''CREATE TABLE IF NOT EXISTS PlagiarismReport (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            exam_id INTEGER,
+                            question_id INTEGER,
+                            student1_id INTEGER,
+                            student2_id INTEGER,
+                            similarity_score REAL,
+                            reasoning TEXT);''')
 
         # In init_db()
         #cursor.execute('''ALTER TABLE Exam ADD COLUMN duration INTEGER''')  # Duration in minutes
@@ -461,8 +543,23 @@ def exam_details(exam_id):
             WHERE Attended.exam_id = ?
         """, (exam_id,))
         students = cursor.fetchall()  # (username, earned_total, student_id)
+    
+    # Fetch high plagiarism cases
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute('''SELECT * FROM PlagiarismReport 
+                          WHERE exam_id=? AND similarity_score >= 75''', (exam_id,))
+        rows = cursor.fetchall()
 
-    return render_template('exam_details.html', exam=exam, students=students)
+        fatal_cases = [{
+            'id': row[0],
+            'student1_id': row[3],
+            'student2_id': row[4],
+            'similarity_score': row[5]
+        } for row in rows]
+
+    return render_template("exam_details.html", exam=exam, students=students, fatal_cases=fatal_cases)
+
 
 @app.route('/check_exam_started/<int:exam_id>')
 def check_exam_started(exam_id):
@@ -511,6 +608,40 @@ def manage_exam(exam_id):
         students = cursor.fetchall()
 
     return render_template('manage_exam.html', exam_id=exam_id, students=students)
+
+@app.route('/generate_plagiarism/<int:exam_id>', methods=['POST'])
+def generate_plagiarism(exam_id):
+    generate_plagiarism_report(exam_id)
+    return redirect(url_for('exam_details', exam_id=exam_id))
+
+@app.route('/plagiarism_detail/<int:report_id>')
+def view_plagiarism_detail(report_id):
+    with sqlite3.connect('database.db') as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM PlagiarismReport WHERE id=?", (report_id,))
+        row = cursor.fetchone()
+
+        # Also fetch the question
+        cursor.execute("SELECT question_text, answer_key FROM Question WHERE id=?", (row[2],))
+        question_row = cursor.fetchone()
+
+        detail = {
+            'student1_id': row[3],
+            'student2_id': row[4],
+            'similarity_score': row[5],
+            'reasoning': row[6],
+            'question': question_row[0],
+            'answer_key': question_row[1]
+        }
+
+        # Get both answers
+        cursor.execute("SELECT answer_text FROM Answer WHERE question_id=? AND student_id=?", (row[2], row[3]))
+        detail['answer1'] = cursor.fetchone()[0]
+        cursor.execute("SELECT answer_text FROM Answer WHERE question_id=? AND student_id=?", (row[2], row[4]))
+        detail['answer2'] = cursor.fetchone()[0]
+
+    return render_template("plagiarism_detail.html", detail=detail)
+
 
 
 if __name__ == '__main__':

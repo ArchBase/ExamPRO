@@ -9,6 +9,7 @@
     <h1>Exam Details</h1>
     <p>Title: {{ exam[2] }}</p>
     <p>Total Marks: {{ exam[3] }}</p>
+
     
     <h2>Students</h2>
     <ul>
@@ -21,5 +22,29 @@
             </li>
         {% endfor %}
     </ul>
+
+    <form method="POST" action="{{ url_for('generate_plagiarism', exam_id=exam[0]) }}">
+        <button type="submit">Generate Plagiarism Report</button>
+    </form>
+
+    <a href="{{ url_for('view_plagiarism_report', exam_id=exam[0]) }}">
+        <button>View Plagiarism Report</button>
+    </a>
+    
+    
+    {% if fatal_cases %}
+    <h2>⚠️ Fatal Plagiarism Cases</h2>
+    <ul>
+    {% for case in fatal_cases %}
+        <li>
+            Student {{ case['student1_id'] }} and Student {{ case['student2_id'] }} — 
+            Score: {{ case['similarity_score'] }} 
+            <a href="{{ url_for('view_plagiarism_detail', report_id=case['id']) }}">
+                <button>View Details</button>
+            </a>
+        </li>
+    {% endfor %}
+    </ul>
+    {% endif %}
 </body>
 </html>
