@@ -15,8 +15,8 @@
     <ul>
         {% for student in students %}
             <li>
-                {{ student[0] }} - {{ student[1] }} marks 
-                <a href="{{ url_for('review_answers', exam_id=exam[0], student_id=student[2]) }}">
+                {{ student[0] }} (Reg: {{ student[1] }}) — {{ student[2] }} marks
+                <a href="{{ url_for('review_answers', exam_id=exam[0], student_id=student[3]) }}">
                     <button>Review Answers</button>
                 </a>
             </li>
@@ -33,9 +33,11 @@
     <ul>
     {% for case in fatal_cases %}
         <li>
-            Student {{ case['student1_id'] }} and Student {{ case['student2_id'] }} — 
-            Score: {{ case['similarity_score'] }} 
-            <a href="{{ url_for('view_plagiarism_detail', report_id=case['id']) }}">
+            {{ case.student1.username }} (Reg: {{ case.student1.reg_no }}) 
+            and 
+            {{ case.student2.username }} (Reg: {{ case.student2.reg_no }}) — 
+            Score: {{ case.similarity_score }}
+            <a href="{{ url_for('view_plagiarism_detail', report_id=case.id) }}">
                 <button>View Details</button>
             </a>
         </li>

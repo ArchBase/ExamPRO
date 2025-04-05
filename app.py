@@ -554,7 +554,7 @@ def exam_details(exam_id):
 
         # Fetch students who attended
         cursor.execute("""
-            SELECT Student.username, Attended.earned_total, Student.id
+            SELECT Student.username, Student.reg_no, Attended.earned_total, Student.id
             FROM Attended
             JOIN Student ON Attended.student_id = Student.id
             WHERE Attended.exam_id = ?
@@ -564,16 +564,37 @@ def exam_details(exam_id):
     # Fetch high plagiarism cases
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
-        cursor.execute('''SELECT * FROM PlagiarismReport 
-                          WHERE exam_id=? AND similarity_score >= 75''', (exam_id,))
+        cursor.execute('''
+            SELECT 
+                PlagiarismReport.id,
+                PlagiarismReport.similarity_score,
+
+                s1.id, s1.username, s1.reg_no,
+                s2.id, s2.username, s2.reg_no
+
+            FROM PlagiarismReport
+            JOIN Student s1 ON PlagiarismReport.student1_id = s1.id
+            JOIN Student s2 ON PlagiarismReport.student2_id = s2.id
+            WHERE PlagiarismReport.exam_id = ? AND PlagiarismReport.similarity_score >= 75
+        ''', (exam_id,))
         rows = cursor.fetchall()
+
 
         fatal_cases = [{
             'id': row[0],
-            'student1_id': row[3],
-            'student2_id': row[4],
-            'similarity_score': row[5]
+            'similarity_score': row[1],
+            'student1': {
+                'id': row[2],
+                'username': row[3],
+                'reg_no': row[4],
+            },
+            'student2': {
+                'id': row[5],
+                'username': row[6],
+                'reg_no': row[7],
+            }
         } for row in rows]
+
 
     return render_template("exam_details.html", exam=exam, students=students, fatal_cases=fatal_cases)
 
@@ -661,29 +682,49 @@ def generate_plagiarism(exam_id):
 def view_plagiarism_detail(report_id):
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
+        
+        # Get plagiarism report row
         cursor.execute("SELECT * FROM PlagiarismReport WHERE id=?", (report_id,))
         row = cursor.fetchone()
+        exam_id, question_id, student1_id, student2_id = row[1], row[2], row[3], row[4]
 
-        # Also fetch the question
-        cursor.execute("SELECT question_text, answer_key FROM Question WHERE id=?", (row[2],))
+        # Get question and answer key
+        cursor.execute("SELECT question_text, answer_key FROM Question WHERE id=?", (question_id,))
         question_row = cursor.fetchone()
 
+        # Get student 1 details
+        cursor.execute("SELECT username, reg_no FROM Student WHERE id=?", (student1_id,))
+        s1 = cursor.fetchone()
+
+        # Get student 2 details
+        cursor.execute("SELECT username, reg_no FROM Student WHERE id=?", (student2_id,))
+        s2 = cursor.fetchone()
+
+        # Get both answers
+        cursor.execute("SELECT answer_text FROM Answer WHERE question_id=? AND student_id=?", (question_id, student1_id))
+        answer1 = cursor.fetchone()
+        cursor.execute("SELECT answer_text FROM Answer WHERE question_id=? AND student_id=?", (question_id, student2_id))
+        answer2 = cursor.fetchone()
+
         detail = {
-            'student1_id': row[3],
-            'student2_id': row[4],
+            'student1': {
+                'username': s1[0],
+                'reg_no': s1[1],
+                'answer': answer1[0] if answer1 else "No answer found"
+            },
+            'student2': {
+                'username': s2[0],
+                'reg_no': s2[1],
+                'answer': answer2[0] if answer2 else "No answer found"
+            },
             'similarity_score': row[5],
             'reasoning': row[6],
             'question': question_row[0],
             'answer_key': question_row[1]
         }
 
-        # Get both answers
-        cursor.execute("SELECT answer_text FROM Answer WHERE question_id=? AND student_id=?", (row[2], row[3]))
-        detail['answer1'] = cursor.fetchone()[0]
-        cursor.execute("SELECT answer_text FROM Answer WHERE question_id=? AND student_id=?", (row[2], row[4]))
-        detail['answer2'] = cursor.fetchone()[0]
-
     return render_template("plagiarism_detail.html", detail=detail)
+
 
 
 @app.route('/get_exam_status/<int:exam_id>')
