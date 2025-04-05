@@ -1,4 +1,4 @@
-/* General Styles */
+/* === Reset & Base Styles === */
 * {
     margin: 0;
     padding: 0;
@@ -6,132 +6,27 @@
     font-family: 'Arial', sans-serif;
 }
 
-body {
-    background-color: #eaebed;
-    color: #006989;
+html, body {
+    height: 100%;
+    width: 100%;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
     flex-direction: column;
-    padding: 20px;
-}
-
-/* Container */
-.container {
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 90%;
-    max-width: 400px;
-}
-
-/* Headers */
-h1, h2 {
-    margin-bottom: 20px;
-}
-
-/* Links */
-a {
-    text-decoration: none;
-    color: #006989;
-    font-weight: bold;
-    transition: color 0.3s;
-}
-
-a:hover {
-    color: #a3bac3;
-}
-
-/* Buttons */
-button {
-    background-color: #006989;
-    color: white;
-    border: none;
-    padding: 10px;
-    width: 100%;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-    margin-top: 10px;
-}
-
-button:hover {
-    background-color: #a3bac3;
-}
-
-/* Forms */
-input, textarea {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #a3bac3;
-    border-radius: 5px;
-}
-
-/* Tables */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-th, td {
-    border: 1px solid #006989;
-    padding: 10px;
-    text-align: left;
-}
-
-th {
-    background-color: #006989;
-    color: white;
-}
-
-td {
-    background-color: #a3bac3;
-    color: white;
-}
-
-/* Animation */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.container, form, table {
-    animation: fadeIn 0.5s ease-in-out;
-}
-/* Reset and Base Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Arial', sans-serif;
-}
-
-body {
-    background-color: #eaebed;
+    background: linear-gradient(to right, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%),
+                url("/static/images/bg.jpg") no-repeat right center fixed;
+    background-size: cover;
     color: #006989;
 }
 
-/* Navbar */
+/* === Navbar === */
 .navbar {
-    width: 100%; /* Make sure it spans full width */
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #006989; /* Updated to your theme color */
+    background-color: #006989;
     padding: 15px 30px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    position: fixed; /* Changed from sticky to fixed for always on top */
+    position: fixed;
     top: 0;
     left: 0;
     z-index: 1000;
@@ -151,12 +46,13 @@ body {
 .site-title {
     font-size: 1.5rem;
     font-weight: bold;
-    color: white; /* White text */
+    color: white;
 }
+
 .nav-links a {
     margin-left: 20px;
     text-decoration: none;
-    color: white; /* White text */
+    color: white;
     font-weight: 500;
     transition: color 0.3s;
 }
@@ -164,32 +60,258 @@ body {
 .nav-links a:hover {
     color: #a3bac3;
 }
-/* Main Content */
-.home-content {
+
+/* === Hero Section === */
+.hero-section {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    min-height: calc(100vh - 80px);
-    text-align: center;
-    padding: 30px 20px;
+    padding: 120px 60px 60px;
+    width: 100%;
+    flex: 1;
 }
 
-.home-content h1 {
-    font-size: 2.5rem;
-    margin-bottom: 15px;
+.hero-text {
+    flex: 1;
+    padding-right: 30px;
+    min-width: 320px;
 }
 
-.home-content p {
+.hero-text h1 {
+    font-size: 3rem;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    color: #006989;
+}
+
+.hero-text .highlight {
+    color: #003f5c;
+}
+
+.hero-text p {
     font-size: 1.1rem;
     color: #333;
+    margin-bottom: 30px;
     max-width: 600px;
 }
 
-/* Responsive */
+.cta-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #006989;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #004b5c;
+}
+
+.btn-secondary {
+    border: 2px solid #006989;
+    color: #006989;
+    background-color: transparent;
+}
+
+.btn-secondary:hover {
+    background-color: #006989;
+    color: white;
+}
+
+.hero-image {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.hero-image img {
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));
+}
+
+/* === Modal Styles === */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 30px 40px;
+    border-radius: 10px;
+    width: 300px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+.modal-content h2 {
+    margin-bottom: 20px;
+    color: #006989;
+}
+
+.modal-buttons button {
+    margin: 10px;
+    padding: 10px 20px;
+    background-color: #006989;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.modal-buttons button:hover {
+    background-color: #004f60;
+}
+
+.close {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 1.5rem;
+    color: #333;
+    cursor: pointer;
+}
+
+/* === Footer === */
+.footer {
+    margin-top: auto;
+    padding: 20px;
+    text-align: center;
+    background-color: #f8f8f8;
+    font-size: 0.9rem;
+    color: #006989;
+    border-top: 1px solid #ddd;
+}
+
+/* === Login & Signup Page Centering === */
+.login-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.login-card {
+    background-color: white;
+    padding: 40px 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-card h1 {
+    margin-bottom: 30px;
+    color: #006989;
+    font-size: 1.8rem;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    text-align: left;
+}
+
+label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+input[type="email"],
+input[type="password"] {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: #006989;
+    outline: none;
+}
+
+button[type="submit"] {
+    margin-top: 10px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background-color: #006989;
+    color: white;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #004c5e;
+}
+
+.signup-prompt {
+    margin-top: 20px;
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.signup-prompt a {
+    color: #006989;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.signup-prompt a:hover {
+    text-decoration: underline;
+}
+
+/* === Responsive === */
 @media (max-width: 768px) {
+    .hero-section {
+        flex-direction: column;
+        padding: 100px 30px 60px;
+        text-align: center;
+    }
+
+    .hero-image {
+        margin-top: 30px;
+        justify-content: center;
+    }
+
+    .cta-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
     .nav-links {
-        display: flex;
         flex-wrap: wrap;
         justify-content: flex-end;
         gap: 10px;
@@ -200,25 +322,11 @@ body {
         font-size: 0.95rem;
     }
 
-    .site-title {
-        font-size: 1.3rem;
+    .login-container {
+        padding: 20px;
     }
 
-    .home-content h1 {
-        font-size: 2rem;
+    .login-card {
+        padding: 30px 20px;
     }
 }
-html, body {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-body {
-    flex: 1;
-}
-
-.footer {
-    margin-top: auto;
-}
-

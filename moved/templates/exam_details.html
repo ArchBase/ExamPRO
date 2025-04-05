@@ -1,25 +1,111 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
     <title>Exam Details</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- External Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Google Fonts for clean UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 60px auto;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            text-align: center;
+            color: #0077b6;
+            margin-bottom: 30px;
+        }
+
+        p {
+            font-size: 18px;
+            margin: 12px 0;
+            color: #555;
+        }
+
+        h2 {
+            margin-top: 40px;
+            color: #0077b6;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        li {
+            background-color: #f9fbfc;
+            border: 1px solid #ddd;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .student-info {
+            font-size: 16px;
+            color: #444;
+        }
+
+        button {
+            padding: 10px 18px;
+            background-color: #00b4d8;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0096c7;
+        }
+
+        a {
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
-    <h1>Exam Details</h1>
-    <p>Title: {{ exam[2] }}</p>
-    <p>Total Marks: {{ exam[3] }}</p>
-    
-    <h2>Students</h2>
-    <ul>
-        {% for student in students %}
-            <li>
-                {{ student[0] }} - {{ student[1] }} marks 
-                <a href="{{ url_for('review_answers', exam_id=exam[0], student_id=student[2]) }}">
-                    <button>Review Answers</button>
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
+    <div class="container">
+        <h1>Exam Details</h1>
+        <p><strong>Title:</strong> {{ exam[2] }}</p>
+        <p><strong>Total Marks:</strong> {{ exam[3] }}</p>
+
+        <h2>Students</h2>
+        <ul>
+            {% for student in students %}
+                <li>
+                    <div class="student-info">
+                        {{ student[0] }} - {{ student[1] }} marks
+                    </div>
+                    <a href="{{ url_for('review_answers', exam_id=exam[0], student_id=student[2]) }}">
+                        <button>Review Answers</button>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
 </body>
 </html>

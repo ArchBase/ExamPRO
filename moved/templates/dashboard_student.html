@@ -1,23 +1,307 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta charset="UTF-8">
     <title>Student Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7fafc;
+        }
+
+        .wrapper {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: #0a1d4d;
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        .logo-title img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+
+        .logo-title span {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            margin: 15px 0;
+            display: block;
+            transition: color 0.3s ease;
+        }
+
+        .sidebar a:hover {
+            color: #48cae4;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            background-color: #f4f7fa;
+            overflow-y: auto;
+        }
+
+        /* Dashboard Section */
+        .dashboard-section h1 {
+            color: #0077b6;
+            font-size: 32px;
+            margin-bottom: 30px;
+        }
+
+        .stat-cards {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            min-width: 180px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 20px;
+            color: #222;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0077b6;
+        }
+
+        /* Write Exam */
+        .write-exam-section {
+            position: absolute;
+            top: 50%;
+            left: 58%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .write-exam-section h1 {
+            color: #0077b6;
+            margin-bottom: 20px;
+        }
+
+        .write-exam-section form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .write-exam-section input {
+            padding: 12px;
+            width: 100%;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .write-exam-section button {
+            padding: 12px 20px;
+            background-color: #0077b6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .write-exam-section button:hover {
+            background-color: #005f87;
+        }
+
+        /* Results Section (Modernized) */
+        .result-section h1 {
+            color: #0077b6;
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-card h3 {
+            font-size: 20px;
+            color: #222;
+            margin-bottom: 10px;
+        }
+
+        .result-card a {
+            display: inline-block;
+            margin-top: 10px;
+            background-color: #0077b6;
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        .result-card a:hover {
+            background-color: #005f87;
+        }
+
+        .no-results {
+            color: #555;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Student Dashboard</h1>
-    <form method="POST">
-        Exam Code: <input type="text" name="exam_code"><br>
-        <button type="submit">Start Exam</button>
-    </form>
-    <h2>Participated Exams</h2>
-    <ul>
-        {% for exam in exams %}
-            <li>{{ exam[1] }} - <a href="/view_result/{{ exam[0] }}">View Result</a></li>
-        {% endfor %}
-    </ul>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo-title">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo">
+                <span>ExamPro</span>
+            </div>
+            <a href="#" onclick="showSection('dashboard')">Dashboard</a>
+            <a href="#" onclick="showSection('writeExam')">Write Exam</a>
+            <a href="#" onclick="showSection('results')">View Results</a>
+            <a href="/" onclick="logout(event)">Logout</a>
+
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="dashboard-section">
+                <h1>Welcome Back!</h1>
+                <div class="stat-cards">
+                    <div class="stat-card">
+                        <h3>Total Exams</h3>
+                        <p>{{ total_exams }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Attempted</h3>
+                        <p>{{ attempted_exams }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Remaining</h3>
+                        <p>{{ remaining_exams }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Average Score</h3>
+                        <p>{{ average_score }}%</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Write Exam Section -->
+            <div id="writeExam" class="write-exam-section" style="display: none;">
+                <h1>Enter Exam Code</h1>
+                <form method="POST">
+                    <input type="text" name="exam_code" placeholder="Exam Code" required>
+                    <button type="submit">Start Exam</button>
+                </form>
+            </div>
+
+            <!-- Results Section (Updated) -->
+            <div id="results" class="result-section" style="display: none;">
+                <h1>Participated Exams</h1>
+                <div class="results-grid">
+                    {% for exam in exams %}
+                        <div class="result-card">
+                            <h3>{{ exam[1] }}</h3>
+                            <a href="/view_result/{{ exam[0] }}">View Result</a>
+                        </div>
+                    {% else %}
+                        <p class="no-results">No exams attempted yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(section) {
+            const sections = ['dashboard', 'writeExam', 'results'];
+            sections.forEach(id => {
+                document.getElementById(id).style.display = (id === section) ? 'block' : 'none';
+            });
+        }
+        
+    function showSection(section) {
+        const sections = ['dashboard', 'writeExam', 'results'];
+        sections.forEach(id => {
+            document.getElementById(id).style.display = (id === section) ? 'block' : 'none';
+        });
+    }
+
+    function logout(event) {
+        event.preventDefault();
+        // Optional: clear session/local storage if used
+        // sessionStorage.clear();
+        // localStorage.clear();
+
+        // Redirect to home page
+        window.location.href = "/";
+    }
+
+
+    </script>
 </body>
 </html>

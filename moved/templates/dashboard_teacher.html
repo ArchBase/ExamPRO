@@ -1,22 +1,219 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <meta charset="UTF-8">
     <title>Teacher Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Base Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7fafc;
+        }
+
+        .wrapper {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: #0a1d4d;
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 40px;
+        }
+
+        .logo-title img {
+            width: 32px;
+            height: 32px;
+        }
+
+        .logo-title span {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            margin: 15px 0;
+            transition: color 0.3s ease;
+        }
+
+        .sidebar a:hover {
+            color: #48cae4;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            background-color: #f4f7fa;
+            overflow-y: auto;
+        }
+
+        .dashboard-section h1 {
+            font-size: 32px;
+            color: #0077b6;
+            margin-bottom: 30px;
+        }
+
+        .stat-cards {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            min-width: 180px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 20px;
+            color: #222;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0077b6;
+        }
+
+        .exam-list {
+            margin-top: 40px;
+        }
+
+        .exam-list h2 {
+            font-size: 24px;
+            color: #0077b6;
+            margin-bottom: 20px;
+        }
+
+        .exam-item {
+            background-color: white;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .exam-item span {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .exam-item a {
+            text-decoration: none;
+            background-color: #0077b6;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .exam-item a:hover {
+            background-color: #005f87;
+        }
+
+        .create-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 16px;
+            background-color: #0077b6;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .create-btn:hover {
+            background-color: #005f87;
+        }
+
+    </style>
 </head>
 <body>
-    <h1>Teacher Dashboard</h1>
-    <a href="/create_exam">Create Exam</a><br>
-    <h2>Created Exams</h2>
-    <ul>
-        {% for exam in exams %}
-            <li>EXAM CODE: {{ exam[0] }} - {{ exam[2] }} 
-                - <a href="/exam_details/{{ exam[0] }}">View Statistics</a>
-            </li>
-        {% endfor %}
-    </ul>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo-title">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo">
+                <span>ExamPro</span>
+            </div>
+            <a href="#">Dashboard</a>
+            <a href="/create_exam">Create Exam</a>
+            <a href="/" onclick="logout(event)">Logout</a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="dashboard-section">
+                <h1>Welcome, Teacher!</h1>
+                <div class="stat-cards">
+                    <div class="stat-card">
+                        <h3>Total Exams</h3>
+                        <p>{{ total_exams }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Students Participated</h3>
+                        <p>{{ total_students }}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Average Score</h3>
+                        <p>{{ average_score }}%</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exam-list">
+                <h2>Created Exams</h2>
+                {% for exam in exams %}
+                    <div class="exam-item">
+                        <span><strong>Code:</strong> {{ exam[0] }} | <strong>Title:</strong> {{ exam[2] }}</span>
+                        <a href="/exam_details/{{ exam[0] }}">View Statistics</a>
+                    </div>
+                {% else %}
+                    <p>No exams created yet.</p>
+                {% endfor %}
+
+                <a href="/create_exam" class="create-btn">+ Create New Exam</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function logout(event) {
+            event.preventDefault();
+            window.location.href = "/";
+        }
+    </script>
 </body>
 </html>

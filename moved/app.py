@@ -191,6 +191,7 @@ def login_student():
                 return redirect('/dashboard_student')
     return render_template('login_student.html')
 
+
 @app.route('/signup_teacher', methods=['GET', 'POST'])
 def signup_teacher():
     if request.method == 'POST':
