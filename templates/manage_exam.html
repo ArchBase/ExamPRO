@@ -11,6 +11,14 @@
             <li>{{ student[0] }}</li>
         {% endfor %}
     </ul>
+
+    <h2>Students Waiting: {{ waiting_students|length }}</h2>
+    <ul>
+        {% for student in waiting_students %}
+            <li>{{ student[0] }}</li>
+        {% endfor %}
+    </ul>
+
     <form method="POST">
         <button type="submit">Start Exam</button>
     </form>

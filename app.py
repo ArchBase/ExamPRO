@@ -304,6 +304,15 @@ def init_db():
                             student2_id INTEGER,
                             similarity_score REAL,
                             reasoning TEXT);''')
+        
+        cursor.execute('''
+                            CREATE TABLE IF NOT EXISTS WaitingRoom (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                exam_id INTEGER,
+                                student_id INTEGER
+                            )
+                        ''')
+
 
         # In init_db()
         #cursor.execute('''ALTER TABLE Exam ADD COLUMN duration INTEGER''')  # Duration in minutes
@@ -389,7 +398,15 @@ def dashboard_student():
                 if is_started == 1:
                     return redirect(f'/write_exam/{exam_code}')
                 else:
+                    # Add to WaitingRoom if not already waiting
+                    student_id = session['student_id']
+                    cursor.execute("SELECT id FROM WaitingRoom WHERE exam_id = ? AND student_id = ?", (exam_code, student_id))
+                    already_waiting = cursor.fetchone()
+                    if not already_waiting:
+                        cursor.execute("INSERT INTO WaitingRoom (exam_id, student_id) VALUES (?, ?)", (exam_code, student_id))
+                        conn.commit()
                     return render_template('waiting_room.html', exam_id=exam_code)
+
 
     student_id = session['student_id']
     with sqlite3.connect('database.db') as conn:
@@ -591,6 +608,7 @@ def manage_exam(exam_id):
         if request.method == 'POST':
             # Start exam temporarily
             cursor.execute("UPDATE Exam SET is_started = 1 WHERE id = ?", (exam_id,))
+            cursor.execute("DELETE FROM WaitingRoom WHERE exam_id = ?", (exam_id,))
             conn.commit()
 
             # Start a background thread to reset is_started after 10 seconds
@@ -606,8 +624,17 @@ def manage_exam(exam_id):
             WHERE Attended.exam_id = ?
         """, (exam_id,))
         students = cursor.fetchall()
+        
+        # Show students in waiting room
+        cursor.execute("""
+            SELECT Student.username 
+            FROM WaitingRoom 
+            JOIN Student ON WaitingRoom.student_id = Student.id 
+            WHERE WaitingRoom.exam_id = ?
+        """, (exam_id,))
+        waiting_students = cursor.fetchall()
 
-    return render_template('manage_exam.html', exam_id=exam_id, students=students)
+    return render_template('manage_exam.html', exam_id=exam_id, students=students, waiting_students=waiting_students)
 
 @app.route('/generate_plagiarism/<int:exam_id>', methods=['POST'])
 def generate_plagiarism(exam_id):
