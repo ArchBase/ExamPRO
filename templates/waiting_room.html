@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Waiting Room</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="600"> <!-- Prevents indefinite open tabs -->
+    <script>
+        function checkExamStatus() {
+            fetch(`/check_exam_started/{{ exam_id }}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.started) {
+                        window.location.href = `/write_exam/{{ exam_id }}`;
+                    } else {
+                        setTimeout(checkExamStatus, 3000); // Check again after 3 seconds
+                    }
+                });
+        }
+
+        window.onload = function() {
+            checkExamStatus();
+        }
+    </script>
+</head>
+<body>
+    <h1>Waiting for the teacher to start the exam...</h1>
+    <p>You will be redirected automatically once the exam begins.</p>
+</body>
+</html>
