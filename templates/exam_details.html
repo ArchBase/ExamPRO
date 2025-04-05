@@ -26,10 +26,6 @@
     <form method="POST" action="{{ url_for('generate_plagiarism', exam_id=exam[0]) }}">
         <button type="submit">Generate Plagiarism Report</button>
     </form>
-
-    <a href="{{ url_for('view_plagiarism_report', exam_id=exam[0]) }}">
-        <button>View Plagiarism Report</button>
-    </a>
     
     
     {% if fatal_cases %}
