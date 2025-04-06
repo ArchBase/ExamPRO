@@ -158,6 +158,42 @@
         .create-btn:hover {
             background-color: #005f87;
         }
+         .profile-header {
+    background-color: white;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 15px 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+    margin-top: 10px;
+}
+
+.profile-info {
+    text-align: right;
+    margin-right: 15px;
+}
+
+.teacher-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0a1d4d;
+}
+
+.teacher-email {
+    font-size: 14px;
+    color: #555;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #0077b6;
+}
+
 
     </style>
 </head>
@@ -176,6 +212,14 @@
 
         <!-- Main Content -->
         <div class="main-content">
+    <!-- Profile Header Bar -->
+<div class="profile-header">
+    <div class="profile-info">
+        <p class="teacher-name">{{ teacher_name }}</p>
+        <p class="teacher-email">{{ teacher_email }}</p>
+    </div>
+    <img src="{{ url_for('static', filename='images/avatar.png') }}" alt="Avatar" class="avatar">
+</div>        
             <div class="dashboard-section">
                 <h1>Welcome, Teacher!</h1>
                 <div class="stat-cards">

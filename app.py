@@ -410,21 +410,93 @@ def dashboard_student():
 
     student_id = session['student_id']
     with sqlite3.connect('database.db') as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT Exam.id, Exam.title, Attended.earned_total FROM Exam JOIN Attended ON Exam.id = Attended.exam_id WHERE Attended.student_id = ?", (student_id,))
-        exams = cursor.fetchall()
-    return render_template('dashboard_student.html', exams=exams)
+       cursor = conn.cursor()
 
+    # Fetch total exams
+    cursor.execute("SELECT COUNT(*) FROM Exam")
+    total_exams = cursor.fetchone()[0]
+
+    # Fetch attempted exams
+    cursor.execute("SELECT COUNT(*) FROM Attended WHERE student_id = ?", (student_id,))
+    attempted_exams = cursor.fetchone()[0]
+
+    # Calculate remaining exams
+    remaining_exams = total_exams - attempted_exams
+
+    # Calculate average score
+    cursor.execute("SELECT AVG(earned_total) FROM Attended WHERE student_id = ?", (student_id,))
+    avg_score = cursor.fetchone()[0]
+    avg_score = round(avg_score, 2) if avg_score else 0
+
+    # Fetch participated exams
+    cursor.execute("SELECT Exam.id, Exam.title, Attended.earned_total FROM Exam JOIN Attended ON Exam.id = Attended.exam_id WHERE Attended.student_id = ?", (student_id,))
+    exams = cursor.fetchall()
+    # Fetch student info
+    cursor.execute("SELECT username, email FROM Student WHERE id = ?", (student_id,))
+    student_info = cursor.fetchone()
+    student_name, student_email = student_info if student_info else ("Unknown", "unknown@example.com")
+
+    return render_template(
+    'dashboard_student.html',
+    exams=exams,
+    total_exams=total_exams,
+    attempted_exams=attempted_exams,
+    remaining_exams=remaining_exams,
+    average_score=avg_score,
+    student_name=student_name,
+    student_email=student_email
+)
 @app.route('/dashboard_teacher')
 def dashboard_teacher():
     if 'teacher_id' not in session:
         return redirect('/login_teacher')
+
     teacher_id = session['teacher_id']
+
     with sqlite3.connect('database.db') as conn:
         cursor = conn.cursor()
+
+        # Fetch all exams by the teacher
         cursor.execute("SELECT * FROM Exam WHERE teacher_id = ?", (teacher_id,))
         exams = cursor.fetchall()
-    return render_template('dashboard_teacher.html', exams=exams)
+
+        # Total exams
+        total_exams = len(exams)
+
+        # Total students who attended the teacher's exams
+        cursor.execute('''
+            SELECT COUNT(DISTINCT Attended.student_id)
+            FROM Attended
+            JOIN Exam ON Attended.exam_id = Exam.id
+            WHERE Exam.teacher_id = ?
+        ''', (teacher_id,))
+        total_students = cursor.fetchone()[0] or 0
+
+        # Average score of students in the teacher's exams
+        cursor.execute('''
+            SELECT AVG(Attended.earned_total)
+            FROM Attended
+            JOIN Exam ON Attended.exam_id = Exam.id
+            WHERE Exam.teacher_id = ?
+        ''', (teacher_id,))
+        avg_score = cursor.fetchone()[0]
+        average_score = round(avg_score, 2) if avg_score else 0
+        # fetch teachers info
+        cursor.execute("SELECT username, email FROM Teacher WHERE id = ?", (teacher_id,))
+        teacher_info = cursor.fetchone()
+        teacher_name,teacher_email = teacher_info if teacher_info else ("Unknown", "unknown@example.com")
+
+
+    return render_template(
+        'dashboard_teacher.html',
+        exams=exams,
+        total_exams=total_exams,
+        total_students=total_students,
+        average_score=average_score,
+        teacher_name=teacher_name,
+        teacher_email=teacher_email
+
+    )
 
 @app.route('/write_exam/<int:exam_id>', methods=['GET', 'POST'])
 def write_exam(exam_id):
