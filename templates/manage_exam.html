@@ -1,57 +1,183 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <title>Manage Exam</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
 
-    <title>Manage Exam</title>
-    <script>
-        function updateStudentLists() {
-            fetch(`/get_exam_status/{{ exam_id }}`)
-                .then(response => response.json())
-                .then(data => {
-                    const joinedList = document.getElementById('joined-list');
-                    const waitingList = document.getElementById('waiting-list');
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-                    joinedList.innerHTML = '';
-                    waitingList.innerHTML = '';
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #e3f2fd, #ffffff);
+      color: #333;
+      animation: fadeIn 0.6s ease-in;
+    }
 
-                    document.getElementById('joined-count').textContent = data.students.length;
-                    document.getElementById('waiting-count').textContent = data.waiting_students.length;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-                    data.students.forEach(student => {
-                        const li = document.createElement('li');
-                        li.textContent = student;
-                        joinedList.appendChild(li);
-                    });
+    h1 {
+      font-size: 32px;
+      text-align: center;
+      margin-bottom: 40px;
+      color: #004e89;
+    }
 
-                    data.waiting_students.forEach(student => {
-                        const li = document.createElement('li');
-                        li.textContent = student;
-                        waitingList.appendChild(li);
-                    });
-                });
-        }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
 
-        // Poll every 3 seconds
-        setInterval(updateStudentLists, 3000);
+    .card {
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(10px);
+      animation: fadeIn 0.8s ease;
+      color: #333;
+    }
 
-        window.onload = updateStudentLists;
-    </script>
+    .card h2 {
+      font-size: 22px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #006494;
+    }
+
+    .count-badge {
+      background-color: #006494;
+      color: white;
+      border-radius: 50%;
+      padding: 6px 12px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    li {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s;
+    }
+
+    li:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+}
+
+
+    .start-btn {
+      background: #006494;
+      color: white;
+      font-size: 12px;
+      width: 100px;
+      padding: 8px 0;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .start-btn:hover {
+      background-color: #004e89;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+
+      .start-btn {
+        width: 100%;
+        max-width: 120px;
+      }
+    }
+  </style>
+
+  <script>
+    function updateStudentLists() {
+      fetch(`/get_exam_status/{{ exam_id }}`)
+        .then(response => response.json())
+        .then(data => {
+          const joinedList = document.getElementById('joined-list');
+          const waitingList = document.getElementById('waiting-list');
+
+          joinedList.innerHTML = '';
+          waitingList.innerHTML = '';
+
+          document.getElementById('joined-count').textContent = data.students.length;
+          document.getElementById('waiting-count').textContent = data.waiting_students.length;
+
+          data.students.forEach(student => {
+            const li = document.createElement('li');
+            li.textContent = student;
+            joinedList.appendChild(li);
+          });
+
+          data.waiting_students.forEach(student => {
+            const li = document.createElement('li');
+            li.textContent = student;
+            waitingList.appendChild(li);
+          });
+        });
+    }
+
+    setInterval(updateStudentLists, 3000);
+    window.onload = updateStudentLists;
+  </script>
 </head>
 <body>
-    <h1>Manage Exam - ID {{ exam_id }}</h1>
 
-    <h2>Students Joined: <span id="joined-count">0</span></h2>
-    <ul id="joined-list"></ul>
+  <h1>Manage Exam - ID {{ exam_id }}</h1>
 
-    <h2>Students Waiting: <span id="waiting-count">0</span></h2>
-    <ul id="waiting-list"></ul>
+  <div class="container">
+    <div class="card">
+      <h2>Students Joined <span class="count-badge" id="joined-count">0</span></h2>
+      <ul id="joined-list"></ul>
+    </div>
 
+    <div class="card">
+      <h2>Students Waiting <span class="count-badge" id="waiting-count">0</span></h2>
+      <ul id="waiting-list"></ul>
+    </div>
+  </div>
+
+  <div class="actions">
     <form method="POST">
-        <button type="submit">Start Exam</button>
+      <button type="submit" class="start-btn">Start</button>
     </form>
+  </div>
+
 </body>
 </html>

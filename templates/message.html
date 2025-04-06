@@ -1,14 +1,91 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>Message</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Message</title>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #f8fbff, #e9f4fd);
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 20px;
+      animation: fadeIn 0.6s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-box {
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(12px);
+      padding: 40px 30px;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin-bottom: 25px;
+      color: #0077b6;
+    }
+
+    a button {
+      padding: 12px 28px;
+      background-color: #0077b6;
+      color: white;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    a button:hover {
+      background-color: #023e8a;
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 600px) {
+      .message-box {
+        padding: 30px 20px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      a button {
+        font-size: 14px;
+        padding: 10px 22px;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div class="message-box">
     <h1>{{ message }}</h1>
     <a href="{{ link_url }}"><button>{{ link_text }}</button></a>
+  </div>
 </body>
 </html>

@@ -1,31 +1,109 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Waiting Room</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="600"> <!-- Prevents indefinite open tabs -->
-    <script>
-        function checkExamStatus() {
-            fetch(`/check_exam_started/{{ exam_id }}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.started) {
-                        window.location.href = `/write_exam/{{ exam_id }}`;
-                    } else {
-                        setTimeout(checkExamStatus, 3000); // Check again after 3 seconds
-                    }
-                });
-        }
+  <meta charset="UTF-8" />
+  <title>Waiting Room</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="refresh" content="600" /> <!-- Prevents indefinite open tabs -->
 
-        window.onload = function() {
-            checkExamStatus();
-        }
-    </script>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #f8fbff, #e9f4fd);
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 20px;
+      animation: fadeIn 0.6s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .waiting-box {
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(12px);
+      padding: 40px 30px;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin-bottom: 15px;
+      color: #0077b6;
+    }
+
+    p {
+      font-size: 16px;
+      color: #444;
+    }
+
+    .loader {
+      margin: 30px auto 0;
+      width: 40px;
+      height: 40px;
+      border: 4px solid #0077b6;
+      border-top: 4px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 600px) {
+      .waiting-box {
+        padding: 30px 20px;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+    }
+  </style>
+
+  <script>
+    function checkExamStatus() {
+      fetch(`/check_exam_started/{{ exam_id }}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.started) {
+            window.location.href = `/write_exam/{{ exam_id }}`;
+          } else {
+            setTimeout(checkExamStatus, 3000);
+          }
+        });
+    }
+
+    window.onload = function () {
+      checkExamStatus();
+    };
+  </script>
 </head>
 <body>
+  <div class="waiting-box">
     <h1>Waiting for the teacher to start the exam...</h1>
     <p>You will be redirected automatically once the exam begins.</p>
+    <div class="loader"></div>
+  </div>
 </body>
 </html>

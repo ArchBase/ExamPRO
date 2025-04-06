@@ -1,16 +1,109 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
     <title>Write Exam</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f2f6fc;
+            color: #222;
+            padding: 30px 20px;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #0077b6;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
         #timer {
-            font-weight: bold;
+            font-weight: 600;
             font-size: 18px;
             color: red;
-            margin-bottom: 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            position: sticky;
+            top: 0;
+            background: #f2f6fc;
+            padding: 10px 0;
+            z-index: 10;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .question-block {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .question-block p {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            font-size: 15px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            border-color: #0077b6;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 119, 182, 0.2);
+        }
+
+        button[type="submit"] {
+            align-self: center;
+            margin-top: 20px;
+            padding: 14px 30px;
+            background-color: #0077b6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #005f87;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 24px;
+            }
+
+            textarea {
+                min-height: 100px;
+            }
         }
     </style>
 </head>
@@ -23,15 +116,17 @@
     <!-- Exam Form -->
     <form method="POST">
         {% for question in questions %}
-            <p>{{ question[2] }}</p>
-            <textarea name="answer_{{ question[0] }}" rows="4" cols="50"></textarea><br><br>
+            <div class="question-block">
+                <p>{{ loop.index }}. {{ question[2] }}</p>
+                <textarea name="answer_{{ question[0] }}" placeholder="Type your answer here..."></textarea>
+            </div>
         {% endfor %}
-        <button type="submit">Submit</button>
+        <button type="submit">Submit Exam</button>
     </form>
 
     <!-- Auto-submit Timer Script -->
     <script>
-        let remainingTime = {{ duration }} * 60; // convert minutes to seconds
+        let remainingTime = {{ duration }} * 60;
 
         const countdown = setInterval(() => {
             remainingTime--;

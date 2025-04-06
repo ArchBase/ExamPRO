@@ -1,48 +1,309 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exam Details</title>
+  <meta charset="UTF-8" />
+  <title>Exam Details</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to bottom right, #e6f0ff, #f7faff);
+      color: #333;
+    }
+
+    h1 {
+      font-size: 36px;
+      text-align: center;
+      color: #004e89;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 18px;
+      padding: 30px;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin: 30px auto;
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+    }
+
+    .card h2 {
+      color: #0077b6;
+      margin-bottom: 20px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .controls input,
+    .controls button {
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .controls input {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .controls button {
+      background-color: #0077b6;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .controls button:hover {
+      background-color: #005f87;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background-color: white;
+      border-radius: 12px;
+      margin-bottom: 14px;
+      padding: 16px 20px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    li span {
+      font-size: 16px;
+    }
+
+    li button {
+      background-color: #00b4d8;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    li button:hover {
+      background-color: #0077b6;
+    }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      margin-left: 8px;
+      color: white;
+    }
+
+    .badge-gold {
+      background: linear-gradient(45deg, #ffd700, #ffb400);
+    }
+
+    .badge-silver {
+      background: linear-gradient(45deg, #c0c0c0, #a8a8a8);
+    }
+
+    .badge-bronze {
+      background: linear-gradient(45deg, #cd7f32, #b87333);
+    }
+
+    form button {
+      padding: 10px 20px;
+      border: none;
+      background: #ff6b6b;
+      color: white;
+      font-size: 15px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      background: #e63946;
+    }
+
+    @media (max-width: 600px) {
+      li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+    }
+  </style>
 </head>
+
 <body>
-    <h1>Exam Details</h1>
-    <p>Title: {{ exam[2] }}</p>
-    <p>Total Marks: {{ exam[3] }}</p>
+  <h1>📘 Exam Details</h1>
 
-    
-    <h2>Students</h2>
-    <ul>
-        {% for student in students %}
-            <li>
-                {{ student[0] }} (Reg: {{ student[1] }}) — {{ student[2] }} marks
-                <a href="{{ url_for('review_answers', exam_id=exam[0], student_id=student[3]) }}">
-                    <button>Review Answers</button>
-                </a>
-            </li>
-        {% endfor %}
+  <div class="card">
+    <p><strong>Title:</strong> {{ exam[2] }}</p>
+    <p><strong>Total Marks:</strong> {{ exam[3] }}</p>
+  </div>
+
+  <div class="card">
+    <h2>🧑‍🎓 Students</h2>
+
+    <div class="controls">
+      <input type="text" id="studentSearch" placeholder="Search student..." onkeyup="filterStudents()" />
+      <button onclick="sortByName()">Sort by Name</button>
+      <button onclick="sortByMarks()">Sort by Marks</button>
+      <button onclick="exportToCSV()">Export CSV</button>
+      <button onclick="exportToPDF()">Export PDF</button>
+    </div>
+
+    <ul id="studentList">
+      {% for student in students %}
+      <li data-name="{{ student[0] }}" data-marks="{{ student[2] }}">
+        <span>
+          {{ student[0] }} (Reg: {{ student[1] }}) — {{ student[2] }} marks
+          <span class="badge badge-position"></span>
+        </span>
+        <a href="{{ url_for('review_answers', exam_id=exam[0], student_id=student[3]) }}">
+          <button>Review</button>
+        </a>
+      </li>
+      {% endfor %}
     </ul>
+  </div>
 
+  <div class="card">
     <form method="POST" action="{{ url_for('generate_plagiarism', exam_id=exam[0]) }}">
-        <button type="submit">Generate Plagiarism Report</button>
+      <button type="submit">🚨 Generate Plagiarism Report</button>
     </form>
-    
-    
-    {% if fatal_cases %}
-    <h2>⚠️ Fatal Plagiarism Cases</h2>
+  </div>
+
+  {% if fatal_cases %}
+  <div class="card">
+    <h2>🚫 Plagiarism Detected</h2>
     <ul>
-    {% for case in fatal_cases %}
-        <li>
-            {{ case.student1.username }} (Reg: {{ case.student1.reg_no }}) 
-            and 
-            {{ case.student2.username }} (Reg: {{ case.student2.reg_no }}) — 
-            Score: {{ case.similarity_score }}
-            <a href="{{ url_for('view_plagiarism_detail', report_id=case.id) }}">
-                <button>View Details</button>
-            </a>
-        </li>
-    {% endfor %}
+      {% for case in fatal_cases %}
+      <li>
+        <span>
+          {{ case.student1.username }} (Reg: {{ case.student1.reg_no }}) & 
+          {{ case.student2.username }} (Reg: {{ case.student2.reg_no }}) —
+          <span class="badge" style="background:#ff5e5e">{{ case.similarity_score }}</span>
+        </span>
+        <a href="{{ url_for('view_plagiarism_detail', report_id=case.id) }}">
+          <button>Details</button>
+        </a>
+      </li>
+      {% endfor %}
     </ul>
-    {% endif %}
+  </div>
+  {% endif %}
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+    function filterStudents() {
+      const input = document.getElementById('studentSearch').value.toLowerCase();
+      const items = document.querySelectorAll('#studentList li');
+      items.forEach(item => {
+        item.style.display = item.textContent.toLowerCase().includes(input) ? '' : 'none';
+      });
+    }
+
+    function sortByName() {
+      const list = [...document.querySelectorAll('#studentList li')];
+      list.sort((a, b) => a.dataset.name.localeCompare(b.dataset.name));
+      renderSorted(list);
+    }
+
+    function sortByMarks() {
+      const list = [...document.querySelectorAll('#studentList li')];
+      list.sort((a, b) => b.dataset.marks - a.dataset.marks);
+      renderSorted(list);
+      assignBadges(list);
+    }
+
+    function renderSorted(sortedList) {
+      const ul = document.getElementById('studentList');
+      ul.innerHTML = '';
+      sortedList.forEach(item => ul.appendChild(item));
+    }
+
+    function assignBadges(list) {
+      list.forEach((item, index) => {
+        const badge = item.querySelector('.badge-position');
+        badge.className = 'badge badge-position';
+        if (index === 0) {
+          badge.textContent = '🥇';
+          badge.classList.add('badge-gold');
+        } else if (index === 1) {
+          badge.textContent = '🥈';
+          badge.classList.add('badge-silver');
+        } else if (index === 2) {
+          badge.textContent = '🥉';
+          badge.classList.add('badge-bronze');
+        } else {
+          badge.textContent = '';
+        }
+      });
+    }
+
+    function exportToCSV() {
+      let csv = 'Name,Reg No,Marks\n';
+      document.querySelectorAll('#studentList li').forEach(li => {
+        const name = li.dataset.name;
+        const marks = li.dataset.marks;
+        const reg = li.textContent.match(/\(Reg: (.*?)\)/)[1];
+        csv += `${name},${reg},${marks}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'students.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(14);
+      doc.text('Student Exam Scores', 10, 10);
+
+      let y = 20;
+      document.querySelectorAll('#studentList li').forEach((li, i) => {
+        const name = li.dataset.name;
+        const marks = li.dataset.marks;
+        const reg = li.textContent.match(/\(Reg: (.*?)\)/)[1];
+        doc.text(`${i + 1}. ${name} (${reg}) - ${marks} marks`, 10, y);
+        y += 10;
+      });
+
+      doc.save('students.pdf');
+    }
+  </script>
 </body>
 </html>
