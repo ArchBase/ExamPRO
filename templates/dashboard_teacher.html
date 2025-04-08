@@ -193,6 +193,11 @@
     object-fit: cover;
     border: 2px solid #0077b6;
 }
+.exam-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
 
 
     </style>
@@ -243,8 +248,11 @@
                 {% for exam in exams %}
                     <div class="exam-item">
                         <span><strong>Code:</strong> {{ exam[0] }} | <strong>Title:</strong> {{ exam[2] }}</span>
-                        <a href="/exam_details/{{ exam[0] }}">View Statistics</a>
-                        <a href="/manage_exam/{{ exam[0] }}">Manage</a>
+                        <div class="exam-actions">
+                            <a href="/exam_details/{{ exam[0] }}">View Statistics</a>
+                            <a href="/manage_exam/{{ exam[0] }}">Manage</a>
+                        </div>
+                        
                     </div>
                 {% else %}
                     <p>No exams created yet.</p>
