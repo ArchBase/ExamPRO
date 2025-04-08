@@ -1,36 +1,94 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <title>Plagiarism Detail</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
 
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-    <title>Manage Exam</title>
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to bottom right, #e6f0ff, #f7faff);
+      color: #333;
+    }
+
+    h1 {
+      font-size: 36px;
+      text-align: center;
+      color: #004e89;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 18px;
+      padding: 30px;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+      max-width: 1000px;
+      margin: 30px auto;
+      transition: 0.3s;
+    }
+
+    .card h2 {
+      color: #0077b6;
+      margin-bottom: 15px;
+    }
+
+    .info-block {
+      margin-bottom: 20px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .highlight {
+      font-weight: 600;
+      color: #005f87;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+    }
+  </style>
 </head>
+
 <body>
+  <h1>🚨 Plagiarism Detail</h1>
 
+  <div class="card">
+    <div class="info-block">
+      <span class="highlight">Student 1:</span> {{ detail.student1.username }} (Reg: {{ detail.student1.reg_no }})<br>
+      <span class="highlight">Student 2:</span> {{ detail.student2.username }} (Reg: {{ detail.student2.reg_no }})<br>
+      <span class="highlight">Similarity Score:</span> {{ detail.similarity_score }}
+    </div>
 
-<h1>Plagiarism Detail</h1>
-<p><strong>Student 1:</strong> {{ detail.student1.username }} (Reg: {{ detail.student1.reg_no }})</p>
-<p><strong>Student 2:</strong> {{ detail.student2.username }} (Reg: {{ detail.student2.reg_no }})</p>
+    <h2>❓ Question</h2>
+    <div class="info-block">{{ detail.question }}</div>
 
-<p><strong>Similarity Score:</strong> {{ detail.similarity_score }}</p>
+    <h2>✅ Answer Key</h2>
+    <div class="info-block">{{ detail.answer_key }}</div>
 
-<h2>Question</h2>
-<p>{{ detail.question }}</p>
+    <h2>🧑‍🎓 Student 1 Answer</h2>
+    <div class="info-block">{{ detail.student1.answer }}</div>
 
-<h2>Answer Key</h2>
-<p>{{ detail.answer_key }}</p>
+    <h2>🧑‍🎓 Student 2 Answer</h2>
+    <div class="info-block">{{ detail.student2.answer }}</div>
 
-<h2>Student 1 Answer</h2>
-<p>{{ detail.student1.answer }}</p>
-
-<h2>Student 2 Answer</h2>
-<p>{{ detail.student2.answer }}</p>
-
-
-<h2>AI Reasoning</h2>
-<p>{{ detail.reasoning }}</p>
- 
+    <h2>🧠 AI Reasoning</h2>
+    <div class="info-block">{{ detail.reasoning }}</div>
+  </div>
 </body>
+</html>
