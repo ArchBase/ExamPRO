@@ -147,7 +147,6 @@ def generate_plagiarism_report(exam_id):
                     if sid1 == sid2:
                         continue
 
-                    # Prompt for reasoning
                     reasoning_prompt = (
                         f"Compare the following two answers to the question:\n\n"
                         f"Q: {qtext}\n\n"
@@ -167,37 +166,36 @@ def generate_plagiarism_report(exam_id):
                     )
 
                     for _ in range(3):  # Retry if needed
-                        # Step 1: Get reasoning
-                        reasoning_response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": reasoning_prompt}])
-                        reasoning_text = reasoning_response['message']['content'].strip()
+                        try:
+                            reasoning_response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": reasoning_prompt}])
+                            reasoning_text = reasoning_response['message']['content'].strip()
 
-                        print(f"\n****************************************************************\nPlagiarism Reasoning:\n{reasoning_text}")
+                            print(f"\n****************************************************************\nPlagiarism Reasoning:\n{reasoning_text}")
 
-                        reasoning_text = re.sub(r'<think>.*?</think>', '', reasoning_text, flags=re.DOTALL).strip()
+                            reasoning_text = re.sub(r'<think>.*?</think>', '', reasoning_text, flags=re.DOTALL).strip()
 
-                        # Step 2: Extract score
-                        extract_prompt = extract_prompt_template.format(deepseek_response=reasoning_text)
-                        extract_response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": extract_prompt}])
-                        extract_text = extract_response['message']['content'].strip()
+                            extract_prompt = extract_prompt_template.format(deepseek_response=reasoning_text)
+                            extract_response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": extract_prompt}])
+                            extract_text = extract_response['message']['content'].strip()
 
-                        print(f"\n****************************************************************\nExtracted Similarity Score:\n{extract_text}")
+                            print(f"\n****************************************************************\nExtracted Similarity Score:\n{extract_text}")
 
-                        match = re.search(r'\d+(\.\d+)?', extract_text)
-                        if match:
-                            score = float(match.group())
-                            score = round(score, 2)
+                            match = re.search(r'\d+(\.\d+)?', extract_text)
+                            if match:
+                                score = float(match.group())
+                                score = round(score, 2)
 
-                            if 0 <= score <= 100:
-                                #score = 100
-                                # Save to DB
-                                cursor.execute('''INSERT INTO PlagiarismReport 
-                                                (exam_id, question_id, student1_id, student2_id, similarity_score, reasoning) 
-                                                VALUES (?, ?, ?, ?, ?, ?)''',
-                                               (exam_id, qid, sid1, sid2, score, reasoning_text))
-                                break  # break retry loop if successful
-
-        conn.commit()
-
+                                if 0 <= score <= 100:
+                                    cursor.execute('''INSERT INTO PlagiarismReport 
+                                                    (exam_id, question_id, student1_id, student2_id, similarity_score, reasoning) 
+                                                    VALUES (?, ?, ?, ?, ?, ?)''',
+                                                   (exam_id, qid, sid1, sid2, score, reasoning_text))
+                                    
+                                    # 💾 Commit immediately after write
+                                    conn.commit()
+                                    break  # exit retry loop
+                        except Exception as e:
+                            print(f"[Retry Failed] Reason: {e}")
 
 
 def evaluate_answer(question, answer, answer_key, max_score):
@@ -213,7 +211,7 @@ def evaluate_answer(question, answer, answer_key, max_score):
 
     for _ in range(3):  # Try 3 times if AI doesn't return a valid number
         # Step 1: Get detailed reasoning from DeepSeek
-        deepseek_response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": reasoning_prompt}])
+        deepseek_response = ollama.chat(model="deepseek-r1:8b", messages=[{"role": "user", "content": reasoning_prompt}])
         deepseek_text = deepseek_response['message']['content'].strip()
 
         print(f"\n****************************************************************\nDeepSeek Response: {deepseek_text}")

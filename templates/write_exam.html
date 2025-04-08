@@ -126,7 +126,7 @@
 
     <!-- Auto-submit Timer Script -->
     <script>
-        let remainingTime = { duration } * 60;
+        let remainingTime = {{ duration|int }} * 60;
 
         const countdown = setInterval(() => {
             remainingTime--;
